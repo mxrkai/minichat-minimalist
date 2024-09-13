@@ -1,0 +1,612 @@
+<html><head><base href="https://chatwebsite.example.com/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniChat AI</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body, html {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f5f5f5;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        
+        #chat-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 80px; /* Space for input container */
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            background-color: #e1f5fe;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        
+        .ai-message {
+            background-color: #f0f0f0;
+            align-self: flex-start;
+            line-height: 1.6;
+        }
+        .ai-message p {
+            margin: 0 0 10px 0;
+        }
+        .ai-message pre {
+            background-color: #e0e0e0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .ai-message code {
+            background-color: #e0e0e0;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        .ai-message ul, .ai-message ol {
+            margin: 0 0 10px 20px;
+            padding: 0;
+        }
+        
+        .copy-icon {
+            cursor: pointer;
+            float: right;
+            margin-left: 10px;
+            font-size: 14px;
+        }
+        
+        #input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            padding: 10px;
+            background-color: #fff;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        #user-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        #send-button {
+            padding: 10px 20px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        
+        #settings-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        #clear-chat-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        
+        #settings-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .settings-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        #save-settings {
+            padding: 10px 20px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .api-key-container {
+            display: flex;
+            align-items: center;
+        }
+
+        #api-key {
+            flex-grow: 1;
+        }
+
+        #toggle-api-visibility {
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 4px;
+            padding: 10px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .toggle-container {
+            position: relative;
+            width: 60px;
+            height: 34px;
+            margin: 10px 0;
+        }
+
+        .toggle-input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-label {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .toggle-label:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        .toggle-input:checked + .toggle-label {
+            background-color: #2196F3;
+        }
+
+        .toggle-input:checked + .toggle-label:before {
+            transform: translateX(26px);
+        }
+
+        @media (max-width: 600px) {
+            .message {
+                max-width: 90%;
+            }
+
+            #send-button {
+                padding: 10px;
+            }
+
+            .modal-content {
+                width: 95%;
+            }
+        }
+
+        .modal-content label {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .system-prompt-container {
+            position: relative;
+        }
+
+        #save-prompt-button {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            padding: 5px 10px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        #prompt-switcher-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #prompt-switcher {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+
+        #delete-prompt-button {
+            padding: 5px 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <button id="clear-chat-button" title="Clear conversation">🗑️</button>
+        <div id="chat-container"></div>
+        <div id="input-container">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button id="send-button">Send</button>
+        </div>
+        <button id="settings-button">⚙️</button>
+    </div>
+    
+    <div id="settings-modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Settings</h2>
+            <label for="api-key">OpenAI API Key:</label>
+            <div class="api-key-container">
+                <input type="password" id="api-key" class="settings-input" placeholder="Enter your OpenAI API key">
+                <button id="toggle-api-visibility">👁️</button>
+            </div>
+            <label for="system-prompt">System Prompt:</label>
+            <div class="system-prompt-container">
+                <textarea id="system-prompt" class="settings-input" rows="4" placeholder="Enter system prompt"></textarea>
+                <button id="save-prompt-button" class="small-button">Save</button>
+            </div>
+            <label for="prompt-switcher">Saved Prompts:</label>
+            <div id="prompt-switcher-container">
+                <select id="prompt-switcher" class="settings-input">
+                    <option value="">Select a saved prompt</option>
+                </select>
+                <button id="delete-prompt-button" class="small-button" style="display: none;">Delete</button>
+            </div>
+            <label for="temperature">Temperature:</label>
+            <input type="number" id="temperature" class="settings-input" placeholder="Temperature (0.0 - 1.0)" min="0" max="1" step="0.1">
+            <label for="max-tokens">Max Tokens:</label>
+            <input type="number" id="max-tokens" class="settings-input" placeholder="Max tokens" min="1">
+            <label for="memory-toggle">Memory:</label>
+            <div class="toggle-container">
+                <input type="checkbox" id="memory-toggle" class="toggle-input">
+                <label for="memory-toggle" class="toggle-label"></label>
+            </div>
+            <label for="model-selector">Model:</label>
+            <select id="model-selector" class="settings-input">
+                <option value="gpt-4o-mini">gpt-4o-mini</option>
+                <option value="gpt-4o">gpt-4o</option>
+            </select>
+            <button id="save-settings">Save Settings</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const settingsButton = document.getElementById('settings-button');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeButton = document.querySelector('.close');
+        const saveSettingsButton = document.getElementById('save-settings');
+        const apiKeyInput = document.getElementById('api-key');
+        const toggleApiVisibilityButton = document.getElementById('toggle-api-visibility');
+        const clearChatButton = document.getElementById('clear-chat-button');
+        const savePromptButton = document.getElementById('save-prompt-button');
+        const promptSwitcher = document.getElementById('prompt-switcher');
+        const deletePromptButton = document.getElementById('delete-prompt-button');
+
+        let savedPrompts = JSON.parse(localStorage.getItem('savedPrompts')) || {};
+        let systemPrompt = "You are a helpful assistant.";
+        let temperature = 0.7;
+        let maxTokens = 4096;
+        let apiKey = '';
+        let model = "gpt-4o-mini"; // Default model
+        let conversationHistory = [];
+        let memoryEnabled = false;
+
+        function updatePromptSwitcher() {
+            promptSwitcher.innerHTML = '<option value="">Select a saved prompt</option>';
+            for (const [label, prompt] of Object.entries(savedPrompts)) {
+                const option = document.createElement('option');
+                option.value = label;
+                option.textContent = label;
+                promptSwitcher.appendChild(option);
+            }
+            deletePromptButton.style.display = 'none';
+        }
+
+        function addMessage(content, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(isUser ? 'user-message' : 'ai-message');
+
+            if (isUser) {
+                messageDiv.textContent = content;
+            } else {
+                messageDiv.innerHTML = marked.parse(content);
+
+                const copyIcon = document.createElement('span');
+                copyIcon.innerHTML = '📋';
+                copyIcon.classList.add('copy-icon');
+                copyIcon.title = 'Copy message';
+                copyIcon.onclick = () => copyMessage(content);
+                messageDiv.appendChild(copyIcon);
+            }
+
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function copyMessage(content) {
+            navigator.clipboard.writeText(content).then(() => {
+                alert('Message copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (message) {
+                addMessage(message, true);
+                userInput.value = '';
+
+                if (!apiKey) {
+                    addMessage("Please set your OpenAI API key in the settings.", false);
+                    return;
+                }
+
+                try {
+                    let messages = [
+                        { role: "system", content: systemPrompt },
+                    ];
+
+                    if (memoryEnabled) {
+                        messages = messages.concat(conversationHistory);
+                    }
+
+                    messages.push({ role: "user", content: message });
+
+                    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+                        model: model,
+                        messages: messages,
+                        temperature: temperature,
+                        max_tokens: maxTokens
+                    }, {
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const aiResponse = response.data.choices[0].message.content;
+                    addMessage(aiResponse, false);
+
+                    if (memoryEnabled) {
+                        conversationHistory.push({ role: "user", content: message });
+                        conversationHistory.push({ role: "assistant", content: aiResponse });
+                        if (conversationHistory.length > 20) {
+                            conversationHistory = conversationHistory.slice(-20);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    addMessage("Sorry, I couldn't process your request. Please check your API key and try again.", false);
+                }
+            }
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        settingsButton.addEventListener('click', () => {
+            settingsModal.style.display = 'flex';
+            document.getElementById('system-prompt').value = systemPrompt;
+            document.getElementById('temperature').value = temperature;
+            document.getElementById('max-tokens').value = maxTokens;
+            apiKeyInput.value = apiKey;
+            document.getElementById('model-selector').value = model;
+            document.getElementById('memory-toggle').checked = memoryEnabled;
+            updatePromptSwitcher();
+        });
+
+        closeButton.addEventListener('click', () => {
+            settingsModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target == settingsModal) {
+                settingsModal.style.display = 'none';
+            }
+        });
+
+        saveSettingsButton.addEventListener('click', () => {
+            const selectedPromptLabel = promptSwitcher.value;
+            if (selectedPromptLabel) {
+                systemPrompt = savedPrompts[selectedPromptLabel];
+            } else {
+                systemPrompt = document.getElementById('system-prompt').value;
+            }
+
+            temperature = parseFloat(document.getElementById('temperature').value);
+            maxTokens = parseInt(document.getElementById('max-tokens').value);
+            apiKey = apiKeyInput.value;
+            model = document.getElementById('model-selector').value;
+            memoryEnabled = document.getElementById('memory-toggle').checked;
+
+            const encryptedApiKey = CryptoJS.AES.encrypt(apiKey, 'secret_passphrase').toString();
+            localStorage.setItem('encryptedApiKey', encryptedApiKey);
+            localStorage.setItem('selectedModel', model);
+            localStorage.setItem('temperature', temperature);
+            localStorage.setItem('maxTokens', maxTokens);
+            localStorage.setItem('memoryEnabled', memoryEnabled);
+
+            settingsModal.style.display = 'none';
+        });
+
+        savePromptButton.addEventListener('click', () => {
+            const promptText = document.getElementById('system-prompt').value;
+            const label = prompt('Enter a label for this prompt:');
+            if (label) {
+                savedPrompts[label] = promptText;
+                localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
+                updatePromptSwitcher();
+            }
+        });
+
+        promptSwitcher.addEventListener('change', (e) => {
+            const selectedLabel = e.target.value;
+            if (selectedLabel) {
+                document.getElementById('system-prompt').value = savedPrompts[selectedLabel];
+                deletePromptButton.style.display = 'inline-block';
+            } else {
+                deletePromptButton.style.display = 'none';
+            }
+        });
+
+        deletePromptButton.addEventListener('click', () => {
+            const selectedLabel = promptSwitcher.value;
+            if (selectedLabel && confirm(`Are you sure you want to delete the prompt "${selectedLabel}"?`)) {
+                delete savedPrompts[selectedLabel];
+                localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
+                updatePromptSwitcher();
+                document.getElementById('system-prompt').value = '';
+            }
+        });
+
+        toggleApiVisibilityButton.addEventListener('click', () => {
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                toggleApiVisibilityButton.textContent = '🙈';
+            } else {
+                apiKeyInput.type = 'password';
+                toggleApiVisibilityButton.textContent = '👁️';
+            }
+        });
+
+        clearChatButton.addEventListener('click', () => {
+            chatContainer.innerHTML = '';
+        });
+
+        window.addEventListener('load', () => {
+            const encryptedApiKey = localStorage.getItem('encryptedApiKey');
+            if (encryptedApiKey) {
+                const decryptedApiKey = CryptoJS.AES.decrypt(encryptedApiKey, 'secret_passphrase').toString(CryptoJS.enc.Utf8);
+                apiKey = decryptedApiKey;
+                apiKeyInput.value = apiKey;
+            }
+
+            const savedModel = localStorage.getItem('selectedModel');
+            if (savedModel) {
+                model = savedModel;
+                document.getElementById('model-selector').value = model;
+            }
+
+            const savedTemperature = localStorage.getItem('temperature');
+            temperature = savedTemperature ? parseFloat(savedTemperature) : 0.7;
+            document.getElementById('temperature').value = temperature;
+
+            const savedMaxTokens = localStorage.getItem('maxTokens');
+            maxTokens = savedMaxTokens ? parseInt(savedMaxTokens) : 4096;
+            document.getElementById('max-tokens').value = maxTokens;
+
+            const savedMemoryEnabled = localStorage.getItem('memoryEnabled');
+            memoryEnabled = savedMemoryEnabled === 'true';
+            document.getElementById('memory-toggle').checked = memoryEnabled;
+
+            updatePromptSwitcher();
+        });
+    </script>
+</body>
+</html>

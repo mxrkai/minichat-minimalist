@@ -1,7 +1,7 @@
 <html><head><base href="https://chatwebsite.example.com/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniChat AI</title>
+    <title>ChatGPT Minimalist</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body, html {
@@ -192,6 +192,26 @@
             width: 100%;
         }
 
+        #reset-settings-button {
+            position: absolute;
+            top: 20px;
+            right: 50px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #reset-settings-button:hover {
+            background-color: #e0e0e0;
+        }
+
         .api-key-container {
             display: flex;
             align-items: center;
@@ -330,6 +350,7 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Settings</h2>
+            <button id="reset-settings-button" title="Reset to default settings">🔄</button>
             <label for="api-key">OpenAI API Key:</label>
             <div class="api-key-container">
                 <input type="password" id="api-key" class="settings-input" placeholder="Enter your OpenAI API key">
@@ -349,8 +370,6 @@
             </div>
             <label for="temperature">Temperature:</label>
             <input type="number" id="temperature" class="settings-input" placeholder="Temperature (0.0 - 1.0)" min="0" max="1" step="0.1">
-            <label for="max-tokens">Max Tokens:</label>
-            <input type="number" id="max-tokens" class="settings-input" placeholder="Max tokens" min="1">
             <label for="memory-toggle">Memory:</label>
             <div class="toggle-container">
                 <input type="checkbox" id="memory-toggle" class="toggle-input">
@@ -381,11 +400,11 @@
         const savePromptButton = document.getElementById('save-prompt-button');
         const promptSwitcher = document.getElementById('prompt-switcher');
         const deletePromptButton = document.getElementById('delete-prompt-button');
+        const resetSettingsButton = document.getElementById('reset-settings-button');
 
         let savedPrompts = JSON.parse(localStorage.getItem('savedPrompts')) || {};
         let systemPrompt = "You are a helpful assistant.";
         let temperature = 0.7;
-        let maxTokens = 4096;
         let apiKey = '';
         let model = "gpt-4o-mini"; // Default model
         let conversationHistory = [];
@@ -457,8 +476,7 @@
                     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
                         model: model,
                         messages: messages,
-                        temperature: temperature,
-                        max_tokens: maxTokens
+                        temperature: temperature
                     }, {
                         headers: {
                             'Authorization': `Bearer ${apiKey}`,
@@ -494,7 +512,6 @@
             settingsModal.style.display = 'flex';
             document.getElementById('system-prompt').value = systemPrompt;
             document.getElementById('temperature').value = temperature;
-            document.getElementById('max-tokens').value = maxTokens;
             apiKeyInput.value = apiKey;
             document.getElementById('model-selector').value = model;
             document.getElementById('memory-toggle').checked = memoryEnabled;
@@ -520,7 +537,6 @@
             }
 
             temperature = parseFloat(document.getElementById('temperature').value);
-            maxTokens = parseInt(document.getElementById('max-tokens').value);
             apiKey = apiKeyInput.value;
             model = document.getElementById('model-selector').value;
             memoryEnabled = document.getElementById('memory-toggle').checked;
@@ -529,7 +545,6 @@
             localStorage.setItem('encryptedApiKey', encryptedApiKey);
             localStorage.setItem('selectedModel', model);
             localStorage.setItem('temperature', temperature);
-            localStorage.setItem('maxTokens', maxTokens);
             localStorage.setItem('memoryEnabled', memoryEnabled);
 
             settingsModal.style.display = 'none';
@@ -579,6 +594,36 @@
             chatContainer.innerHTML = '';
         });
 
+        function resetSettings() {
+            systemPrompt = "You are a helpful assistant.";
+            temperature = 0.7;
+            apiKey = '';
+            model = "gpt-4o-mini";
+            memoryEnabled = false;
+            savedPrompts = {};
+
+            // Update UI
+            document.getElementById('system-prompt').value = systemPrompt;
+            document.getElementById('temperature').value = temperature;
+            apiKeyInput.value = apiKey;
+            document.getElementById('model-selector').value = model;
+            document.getElementById('memory-toggle').checked = memoryEnabled;
+
+            // Clear local storage
+            localStorage.removeItem('encryptedApiKey');
+            localStorage.removeItem('selectedModel');
+            localStorage.removeItem('temperature');
+            localStorage.removeItem('memoryEnabled');
+            localStorage.removeItem('savedPrompts');
+
+            // Update prompt switcher
+            updatePromptSwitcher();
+
+            alert('Settings have been reset to default values.');
+        }
+
+        resetSettingsButton.addEventListener('click', resetSettings);
+
         window.addEventListener('load', () => {
             const encryptedApiKey = localStorage.getItem('encryptedApiKey');
             if (encryptedApiKey) {
@@ -596,10 +641,6 @@
             const savedTemperature = localStorage.getItem('temperature');
             temperature = savedTemperature ? parseFloat(savedTemperature) : 0.7;
             document.getElementById('temperature').value = temperature;
-
-            const savedMaxTokens = localStorage.getItem('maxTokens');
-            maxTokens = savedMaxTokens ? parseInt(savedMaxTokens) : 4096;
-            document.getElementById('max-tokens').value = maxTokens;
 
             const savedMemoryEnabled = localStorage.getItem('memoryEnabled');
             memoryEnabled = savedMemoryEnabled === 'true';

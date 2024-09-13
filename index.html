@@ -403,7 +403,7 @@
         const resetSettingsButton = document.getElementById('reset-settings-button');
 
         let savedPrompts = JSON.parse(localStorage.getItem('savedPrompts')) || {};
-        let systemPrompt = "You are a helpful assistant.";
+        let systemPrompt = "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question.";
         let temperature = 0.7;
         let apiKey = '';
         let model = "gpt-4o-mini"; // Default model
@@ -595,7 +595,7 @@
         });
 
         function resetSettings() {
-            systemPrompt = "You are a helpful assistant.";
+            systemPrompt = "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question.";
             temperature = 0.7;
             apiKey = '';
             model = "gpt-4o-mini";

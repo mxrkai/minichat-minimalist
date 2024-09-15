@@ -616,6 +616,8 @@
 
         clearChatButton.addEventListener('click', () => {
             chatContainer.innerHTML = '';
+            // Reset conversation history when clearing the chat
+            conversationHistory = [];
         });
 
         function resetSettings() {

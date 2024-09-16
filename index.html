@@ -371,6 +371,11 @@
                 <input type="password" id="api-key" class="settings-input" placeholder="Enter your OpenAI API key">
                 <button id="toggle-api-visibility">👁️</button>
             </div>
+            <label for="base-url-selector">API Base URL:</label>
+            <select id="base-url-selector" class="settings-input">
+                <option value="https://api.openai.com">OpenAI API</option>
+                <option value="https://api.groq.com/openai">Groq API</option>
+            </select>
             <label for="system-prompt">System Prompt:</label>
             <div class="system-prompt-container">
                 <textarea id="system-prompt" class="settings-input" rows="4" placeholder="Enter system prompt"></textarea>
@@ -396,6 +401,7 @@
             <select id="model-selector" class="settings-input">
                 <option value="gpt-4o-mini">gpt-4o-mini</option>
                 <option value="gpt-4o">gpt-4o</option>
+                <option value="llama3-groq-70b-8192-tool-use-preview">llama3-groq-70b-8192-tool-use-preview</option>
             </select>
             <button id="save-settings">Save Settings</button>
         </div>
@@ -420,6 +426,7 @@
         const deletePromptButton = document.getElementById('delete-prompt-button');
         const resetSettingsButton = document.getElementById('reset-settings-button');
 
+        let baseUrl = 'https://api.openai.com';
         let savedPrompts = {
             "Concise": "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question."
         };
@@ -493,7 +500,7 @@
 
                     messages.push({ role: "user", content: message });
 
-                    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+                    const response = await axios.post(`${baseUrl}/v1/chat/completions`, {
                         model: model,
                         messages: messages,
                         temperature: temperature
@@ -535,6 +542,7 @@
             apiKeyInput.value = apiKey;
             document.getElementById('model-selector').value = model;
             document.getElementById('memory-toggle').checked = memoryEnabled;
+            document.getElementById('base-url-selector').value = baseUrl;
             updatePromptSwitcher();
         });
 
@@ -560,12 +568,14 @@
             apiKey = apiKeyInput.value;
             model = document.getElementById('model-selector').value;
             memoryEnabled = document.getElementById('memory-toggle').checked;
+            baseUrl = document.getElementById('base-url-selector').value;
 
             const encryptedApiKey = CryptoJS.AES.encrypt(apiKey, 'secret_passphrase').toString();
             localStorage.setItem('encryptedApiKey', encryptedApiKey);
             localStorage.setItem('selectedModel', model);
             localStorage.setItem('temperature', temperature);
             localStorage.setItem('memoryEnabled', memoryEnabled);
+            localStorage.setItem('baseUrl', baseUrl);
 
             settingsModal.style.display = 'none';
         });
@@ -616,7 +626,6 @@
 
         clearChatButton.addEventListener('click', () => {
             chatContainer.innerHTML = '';
-            // Reset conversation history when clearing the chat
             conversationHistory = [];
         });
 
@@ -625,26 +634,26 @@
             temperature = 0.7;
             apiKey = '';
             model = "gpt-4o-mini";
+            baseUrl = 'https://api.openai.com';
             memoryEnabled = true;
             savedPrompts = {
                 "Concise": "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question."
             };
 
-            // Update UI
             document.getElementById('system-prompt').value = systemPrompt;
             document.getElementById('temperature').value = temperature;
             apiKeyInput.value = apiKey;
             document.getElementById('model-selector').value = model;
             document.getElementById('memory-toggle').checked = memoryEnabled;
+            document.getElementById('base-url-selector').value = baseUrl;
 
-            // Clear local storage
             localStorage.removeItem('encryptedApiKey');
             localStorage.removeItem('selectedModel');
             localStorage.removeItem('temperature');
+            localStorage.removeItem('baseUrl');
             localStorage.setItem('memoryEnabled', 'true');
             localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
 
-            // Update prompt switcher
             updatePromptSwitcher();
 
             alert('Settings have been reset to default values.');
@@ -664,6 +673,8 @@
             if (savedModel) {
                 model = savedModel;
                 document.getElementById('model-selector').value = model;
+            } else {
+                document.getElementById('model-selector').value = "gpt-4o-mini";
             }
 
             const savedTemperature = localStorage.getItem('temperature');
@@ -671,10 +682,17 @@
             document.getElementById('temperature').value = temperature;
 
             const savedMemoryEnabled = localStorage.getItem('memoryEnabled');
-            memoryEnabled = savedMemoryEnabled !== null ? savedMemoryEnabled === 'true' : true; // Changed to true
+            memoryEnabled = savedMemoryEnabled !== null ? savedMemoryEnabled === 'true' : true;
             document.getElementById('memory-toggle').checked = memoryEnabled;
 
-            // Load saved prompts from localStorage, but ensure the pre-defined prompt is always present
+            const savedBaseUrl = localStorage.getItem('baseUrl');
+            if (savedBaseUrl) {
+                baseUrl = savedBaseUrl;
+                document.getElementById('base-url-selector').value = baseUrl;
+            } else {
+                document.getElementById('base-url-selector').value = 'https://api.openai.com';
+            }
+
             const loadedPrompts = JSON.parse(localStorage.getItem('savedPrompts')) || {};
             savedPrompts = { ...savedPrompts, ...loadedPrompts };
             localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));

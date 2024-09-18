@@ -493,6 +493,7 @@
                 <select id="prompt-switcher" class="settings-input">
                     <option value="">Select a saved prompt</option>
                     <option value="Concise">Concise</option>
+                    <option value="Therapist">Therapist</option>
                 </select>
                 <button id="delete-prompt-button" class="small-button" style="display: none;">Delete</button>
             </div>
@@ -547,7 +548,8 @@
         const resetSettingsButton = document.getElementById('reset-settings-button');
 
         let savedPrompts = {
-            "Concise": "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question."
+            "Concise": "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question.",
+            "Therapist": "Act as a compassionate and professional counselor. Your job is to provide a safe, empathetic, and non-judgmental space where I can casually and openly vent my feelings, emotions, stresses, anxieties, and problems. Engage with me in a conversational manner, offering support, understanding, and occasional guidance to help me navigate through my challenges. Talk in casual gangsta tone."
         };
         let savedApiKeys = {};
         let systemPrompt = "";
@@ -867,7 +869,8 @@
             baseUrl = 'https://api.openai.com';
             memoryEnabled = true;
             savedPrompts = {
-                "Concise": "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question."
+                "Concise": "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question.",
+                "Therapist": "Act as a compassionate and professional counselor. Your job is to provide a safe, empathetic, and non-judgmental space where I can casually and openly vent my feelings, emotions, stresses, anxieties, and problems. Engage with me in a conversational manner, offering support, understanding, and occasional guidance to help me navigate through my challenges. Talk in casual gangsta tone."
             };
             savedApiKeys = {};
             savedBaseUrls = {

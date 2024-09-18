@@ -477,6 +477,8 @@
             <div id="base-url-switcher-container">
                 <select id="base-url-switcher" class="settings-input">
                     <option value="">Select a saved Base URL</option>
+                    <option value="OpenAI">OpenAI</option>
+                    <option value="Groq">Groq</option>
                 </select>
                 <button id="delete-base-url-button" class="small-button" style="display: none;">Delete</button>
             </div>
@@ -523,6 +525,10 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
+        let savedBaseUrls = {
+            "OpenAI": "https://api.openai.com",
+            "Groq": "https://api.groq.com/openai"
+        };
         let baseUrl = 'https://api.openai.com';
         const chatContainer = document.getElementById('chat-container');
         const userInput = document.getElementById('user-input');
@@ -544,7 +550,6 @@
             "Concise": "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question."
         };
         let savedApiKeys = {};
-        let savedBaseUrls = {};
         let systemPrompt = "";
         let temperature = 0.7;
         let apiKey = '';
@@ -865,7 +870,10 @@
                 "Concise": "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question."
             };
             savedApiKeys = {};
-            savedBaseUrls = {};
+            savedBaseUrls = {
+                "OpenAI": "https://api.openai.com",
+                "Groq": "https://api.groq.com/openai"
+            };
 
             document.getElementById('system-prompt').value = systemPrompt;
             document.getElementById('temperature').value = temperature;

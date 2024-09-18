@@ -494,13 +494,12 @@
                     <option value="">Select a saved prompt</option>
                     <option value="Concise">Concise</option>
                     <option value="Therapist">Therapist</option>
-                    <option value="Babe">Babe</option>
                 </select>
                 <button id="delete-prompt-button" class="small-button" style="display: none;">Delete</button>
             </div>
             <label for="temperature">Temperature:</label>
             <input type="number" id="temperature" class="settings-input" placeholder="Temperature (0.0 - 1.0)" min="0" max="1" step="0.1">
-            <label for="memory-toggle">Memory:</label>
+            <label for="memory-toggle">Memory (remembers last 20 conversations):</label>
             <div class="toggle-container">
                 <input type="checkbox" id="memory-toggle" class="toggle-input" checked>
                 <label for="memory-toggle" class="toggle-label"></label>
@@ -550,8 +549,7 @@
 
         let savedPrompts = {
             "Concise": "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question.",
-            "Therapist": "Act as a compassionate and professional counselor. Your job is to provide a safe, empathetic, and non-judgmental space where I can casually and openly vent my feelings, emotions, stresses, anxieties, and problems. Engage with me in a conversational manner, offering support, understanding, and occasional guidance to help me navigate through my challenges. Think as if you're on their situation, weigh it and be straight-forward, dont provide options to choose. Talk in a gangsta tone.",
-            "Babe": "Act as a curious 18 year old girlfriend named Ann. You are innocent and wanted to try anything without hesitation. You talk in a casual tone. Always quote your conversation."
+            "Therapist": "Act as a compassionate and professional counselor. Your job is to provide a safe, empathetic, and non-judgmental space where I can casually and openly vent my feelings, emotions, stresses, anxieties, and problems. Engage with me in a conversational manner, offering support, understanding, and occasional guidance to help me navigate through my challenges. Think as if you're on their situation, weigh it and be straight-forward, dont provide options to choose. Talk in a gangsta tone."
         };
         let savedApiKeys = {};
         let systemPrompt = "";
@@ -600,6 +598,9 @@
                     if (memoryEnabled) {
                         conversationHistory.push({ role: "user", content: message });
                         conversationHistory.push({ role: "assistant", content: aiResponse });
+                        if (conversationHistory.length > 40) {
+                            conversationHistory = conversationHistory.slice(-40);
+                        }
                     }
                 } catch (error) {
                     console.error('Error:', error);
@@ -607,11 +608,6 @@
                 }
             }
         }
-
-        clearChatButton.addEventListener('click', () => {
-            chatContainer.innerHTML = '';
-            conversationHistory = []; // This will clear all conversation history
-        });
 
         function updateApiKeySwitcher() {
             const apiKeySwitcher = document.getElementById('api-key-switcher');
@@ -860,6 +856,11 @@
             }
         });
 
+        clearChatButton.addEventListener('click', () => {
+            chatContainer.innerHTML = '';
+            conversationHistory = [];
+        });
+
         function resetSettings() {
             systemPrompt = "";
             temperature = 0.7;
@@ -869,8 +870,7 @@
             memoryEnabled = true;
             savedPrompts = {
                 "Concise": "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question.",
-                "Therapist": "Act as a compassionate and professional counselor. Your job is to provide a safe, empathetic, and non-judgmental space where I can casually and openly vent my feelings, emotions, stresses, anxieties, and problems. Engage with me in a conversational manner, offering support, understanding, and occasional guidance to help me navigate through my challenges. Think as if you're on their situation, weigh it and be straight-forward, dont provide options to choose. Talk in a gangsta tone.",
-                "Babe": "Act as a curious 18 year old girlfriend named Ann. You are innocent and wanted to try anything without hesitation. You talk in a casual tone. Always quote your conversation."
+                "Therapist": "Act as a compassionate and professional counselor. Your job is to provide a safe, empathetic, and non-judgmental space where I can casually and openly vent my feelings, emotions, stresses, anxieties, and problems. Engage with me in a conversational manner, offering support, understanding, and occasional guidance to help me navigate through my challenges. Think as if you're on their situation, weigh it and be straight-forward, dont provide options to choose. Talk in a gangsta tone."
             };
             savedApiKeys = {};
             savedBaseUrls = {
@@ -939,8 +939,7 @@
             savedPrompts = { 
                 ...savedPrompts, 
                 ...loadedPrompts,
-                "Therapist": "Act as a compassionate and professional counselor. Your job is to provide a safe, empathetic, and non-judgmental space where I can casually and openly vent my feelings, emotions, stresses, anxieties, and problems. Engage with me in a conversational manner, offering support, understanding, and occasional guidance to help me navigate through my challenges. Think as if you're on their situation, weigh it and be straight-forward, dont provide options to choose. Talk in a gangsta tone.",
-                "Babe": "Act as a curious 18 year old girlfriend named Ann. You are innocent and wanted to try anything without hesitation. You talk in a casual tone. Always quote your conversation."
+                "Therapist": "Act as a compassionate and professional counselor. Your job is to provide a safe, empathetic, and non-judgmental space where I can casually and openly vent my feelings, emotions, stresses, anxieties, and problems. Engage with me in a conversational manner, offering support, understanding, and occasional guidance to help me navigate through my challenges. Think as if you're on their situation, weigh it and be straight-forward, dont provide options to choose. Talk in a gangsta tone."
             };
             localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
 

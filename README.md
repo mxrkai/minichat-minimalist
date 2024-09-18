@@ -14,20 +14,11 @@ Features
 Usage
 -----
 
-To use this chat interface, simply open the `index.html` file in a web browser. You can then customize the API base URL and API keys by modifying the values of the `apiBaseUrl` and `apiKey` variables in the JavaScript code.
+To use this chat interface, you can deploy the `index.html` file to any web deployment service. We recommend using Vercel for easy deployment and management.
 
-Example
--------
+Once the file is deployed, you can customize the API base URL and API keys by setting them in the service's settings.
 
-To use this chat interface with a hypothetical chat API at `https://example.com/chat`, you would set the `apiBaseUrl` variable as follows:
-```
-const apiBaseUrl = 'https://example.com/chat';
-```
-You would then set the `apiKey` variable to your API key for that service:
-```
-const apiKey = 'your-api-key-here';
-```
-With these values set, you can then use the chat interface to send and receive messages through the API.
+With the API base URL and API keys set, you can then use the chat interface to send and receive messages through the API.
 
 Built With
 ----------

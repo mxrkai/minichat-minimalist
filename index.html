@@ -248,6 +248,38 @@
             cursor: pointer;
         }
 
+        #save-api-key-button {
+            padding: 5px 10px;
+            background-color: #4da6ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        #api-key-switcher-container {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        #api-key-switcher {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+
+        #delete-api-key-button {
+            padding: 5px 10px;
+            background-color: #ff6666;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
         .toggle-container {
             position: relative;
             width: 60px;
@@ -367,7 +399,16 @@
             font-size: 12px;
         }
 
-        #save-api-key-button {
+        .base-url-container {
+            display: flex;
+            align-items: center;
+        }
+
+        #base-url {
+            flex-grow: 1;
+        }
+
+        #save-base-url-button {
             padding: 5px 10px;
             background-color: #4da6ff;
             color: white;
@@ -375,21 +416,21 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
-            margin-left: 5px;
+            margin-left: 10px;
         }
 
-        #api-key-switcher-container {
+        #base-url-switcher-container {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            margin-top: 10px;
         }
 
-        #api-key-switcher {
+        #base-url-switcher {
             flex-grow: 1;
             margin-right: 10px;
         }
 
-        #delete-api-key-button {
+        #delete-base-url-button {
             padding: 5px 10px;
             background-color: #ff6666;
             color: white;
@@ -422,7 +463,6 @@
                 <button id="toggle-api-visibility">👁️</button>
                 <button id="save-api-key-button" class="small-button">Save</button>
             </div>
-            <label for="api-key-switcher">Saved API Keys:</label>
             <div id="api-key-switcher-container">
                 <select id="api-key-switcher" class="settings-input">
                     <option value="">Select a saved API key</option>
@@ -430,7 +470,16 @@
                 <button id="delete-api-key-button" class="small-button" style="display: none;">Delete</button>
             </div>
             <label for="base-url">API Base URL:</label>
-            <input type="text" id="base-url" class="settings-input" placeholder="Enter API Base URL">
+            <div class="base-url-container">
+                <input type="text" id="base-url" class="settings-input" placeholder="Enter API Base URL">
+                <button id="save-base-url-button" class="small-button">Save</button>
+            </div>
+            <div id="base-url-switcher-container">
+                <select id="base-url-switcher" class="settings-input">
+                    <option value="">Select a saved Base URL</option>
+                </select>
+                <button id="delete-base-url-button" class="small-button" style="display: none;">Delete</button>
+            </div>
             <label for="system-prompt">System Prompt:</label>
             <div class="system-prompt-container">
                 <textarea id="system-prompt" class="settings-input" rows="4" placeholder="Enter system prompt"></textarea>
@@ -482,11 +531,8 @@
         const settingsModal = document.getElementById('settings-modal');
         const closeButton = document.querySelector('.close');
         const saveSettingsButton = document.getElementById('save-settings');
-        const saveApiKeyButton = document.getElementById('save-api-key-button');
         const apiKeyInput = document.getElementById('api-key');
         const toggleApiVisibilityButton = document.getElementById('toggle-api-visibility');
-        const apiKeySwitcher = document.getElementById('api-key-switcher');
-        const deleteApiKeyButton = document.getElementById('delete-api-key-button');
         const clearChatButton = document.getElementById('clear-chat-button');
         const savePromptButton = document.getElementById('save-prompt-button');
         const clearPromptButton = document.getElementById('clear-prompt-button');
@@ -498,12 +544,37 @@
             "Concise": "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question."
         };
         let savedApiKeys = {};
+        let savedBaseUrls = {};
         let systemPrompt = "";
         let temperature = 0.7;
         let apiKey = '';
         let model = "gpt-4o-mini"; // Default model
         let conversationHistory = [];
         let memoryEnabled = true; // Changed to true
+
+        function updateApiKeySwitcher() {
+            const apiKeySwitcher = document.getElementById('api-key-switcher');
+            apiKeySwitcher.innerHTML = '<option value="">Select a saved API key</option>';
+            for (const label of Object.keys(savedApiKeys)) {
+                const option = document.createElement('option');
+                option.value = label;
+                option.textContent = label;
+                apiKeySwitcher.appendChild(option);
+            }
+            document.getElementById('delete-api-key-button').style.display = 'none';
+        }
+
+        function updateBaseUrlSwitcher() {
+            const baseUrlSwitcher = document.getElementById('base-url-switcher');
+            baseUrlSwitcher.innerHTML = '<option value="">Select a saved Base URL</option>';
+            for (const label of Object.keys(savedBaseUrls)) {
+                const option = document.createElement('option');
+                option.value = label;
+                option.textContent = label;
+                baseUrlSwitcher.appendChild(option);
+            }
+            document.getElementById('delete-base-url-button').style.display = 'none';
+        }
 
         function updatePromptSwitcher() {
             promptSwitcher.innerHTML = '<option value="">Select a saved prompt</option>';
@@ -514,17 +585,6 @@
                 promptSwitcher.appendChild(option);
             }
             deletePromptButton.style.display = 'none';
-        }
-
-        function updateApiKeySwitcher() {
-            apiKeySwitcher.innerHTML = '<option value="">Select a saved API key</option>';
-            for (const label of Object.keys(savedApiKeys)) {
-                const option = document.createElement('option');
-                option.value = label;
-                option.textContent = label;
-                apiKeySwitcher.appendChild(option);
-            }
-            deleteApiKeyButton.style.display = 'none';
         }
 
         function addMessage(content, isUser) {
@@ -647,6 +707,7 @@
             document.getElementById('base-url').value = baseUrl;
             updatePromptSwitcher();
             updateApiKeySwitcher();
+            updateBaseUrlSwitcher();
         });
 
         closeButton.addEventListener('click', () => {
@@ -659,36 +720,7 @@
             }
         });
 
-        saveSettingsButton.addEventListener('click', () => {
-            const selectedPromptLabel = promptSwitcher.value;
-            if (selectedPromptLabel) {
-                systemPrompt = savedPrompts[selectedPromptLabel];
-            } else {
-                systemPrompt = document.getElementById('system-prompt').value;
-            }
-
-            temperature = parseFloat(document.getElementById('temperature').value);
-            const selectedApiKeyLabel = apiKeySwitcher.value;
-            if (selectedApiKeyLabel) {
-                apiKey = savedApiKeys[selectedApiKeyLabel];
-            } else {
-                apiKey = apiKeyInput.value;
-            }
-            model = document.getElementById('model-selector').value;
-            memoryEnabled = document.getElementById('memory-toggle').checked;
-            baseUrl = document.getElementById('base-url').value || 'https://api.openai.com';
-
-            const encryptedApiKey = CryptoJS.AES.encrypt(apiKey, 'secret_passphrase').toString();
-            localStorage.setItem('encryptedApiKey', encryptedApiKey);
-            localStorage.setItem('selectedModel', model);
-            localStorage.setItem('temperature', temperature);
-            localStorage.setItem('memoryEnabled', memoryEnabled);
-            localStorage.setItem('baseUrl', baseUrl);
-
-            settingsModal.style.display = 'none';
-        });
-
-        saveApiKeyButton.addEventListener('click', () => {
+        document.getElementById('save-api-key-button').addEventListener('click', () => {
             const apiKeyValue = apiKeyInput.value.trim();
             if (apiKeyValue) {
                 const label = prompt('Enter a label for this API key:');
@@ -700,24 +732,77 @@
             }
         });
 
-        apiKeySwitcher.addEventListener('change', (e) => {
+        document.getElementById('api-key-switcher').addEventListener('change', (e) => {
             const selectedLabel = e.target.value;
             if (selectedLabel) {
                 apiKeyInput.value = savedApiKeys[selectedLabel];
-                deleteApiKeyButton.style.display = 'inline-block';
+                document.getElementById('delete-api-key-button').style.display = 'inline-block';
             } else {
-                deleteApiKeyButton.style.display = 'none';
+                document.getElementById('delete-api-key-button').style.display = 'none';
             }
         });
 
-        deleteApiKeyButton.addEventListener('click', () => {
-            const selectedLabel = apiKeySwitcher.value;
+        document.getElementById('delete-api-key-button').addEventListener('click', () => {
+            const selectedLabel = document.getElementById('api-key-switcher').value;
             if (selectedLabel && confirm(`Are you sure you want to delete the API key "${selectedLabel}"?`)) {
                 delete savedApiKeys[selectedLabel];
                 localStorage.setItem('savedApiKeys', JSON.stringify(savedApiKeys));
                 updateApiKeySwitcher();
                 apiKeyInput.value = '';
             }
+        });
+
+        document.getElementById('save-base-url-button').addEventListener('click', () => {
+            const baseUrlValue = document.getElementById('base-url').value.trim();
+            if (baseUrlValue) {
+                const label = prompt('Enter a label for this Base URL:');
+                if (label) {
+                    savedBaseUrls[label] = baseUrlValue;
+                    localStorage.setItem('savedBaseUrls', JSON.stringify(savedBaseUrls));
+                    updateBaseUrlSwitcher();
+                }
+            }
+        });
+
+        document.getElementById('base-url-switcher').addEventListener('change', (e) => {
+            const selectedLabel = e.target.value;
+            if (selectedLabel) {
+                document.getElementById('base-url').value = savedBaseUrls[selectedLabel];
+                document.getElementById('delete-base-url-button').style.display = 'inline-block';
+            } else {
+                document.getElementById('delete-base-url-button').style.display = 'none';
+            }
+        });
+
+        document.getElementById('delete-base-url-button').addEventListener('click', () => {
+            const selectedLabel = document.getElementById('base-url-switcher').value;
+            if (selectedLabel && confirm(`Are you sure you want to delete the Base URL "${selectedLabel}"?`)) {
+                delete savedBaseUrls[selectedLabel];
+                localStorage.setItem('savedBaseUrls', JSON.stringify(savedBaseUrls));
+                updateBaseUrlSwitcher();
+                document.getElementById('base-url').value = '';
+            }
+        });
+
+        saveSettingsButton.addEventListener('click', () => {
+            const selectedPromptLabel = promptSwitcher.value;
+            if (selectedPromptLabel) {
+                systemPrompt = savedPrompts[selectedPromptLabel];
+            } else {
+                systemPrompt = document.getElementById('system-prompt').value;
+            }
+
+            temperature = parseFloat(document.getElementById('temperature').value);
+            apiKey = apiKeyInput.value;
+            model = document.getElementById('model-selector').value;
+            memoryEnabled = document.getElementById('memory-toggle').checked;
+            baseUrl = document.getElementById('base-url').value || 'https://api.openai.com';
+
+            const encryptedApiKey = CryptoJS.AES.encrypt(apiKey, 'secret_passphrase').toString();
+            localStorage.setItem('encryptedApiKey', encryptedApiKey);
+            localStorage.setItem('savedBaseUrls', JSON.stringify(savedBaseUrls));
+
+            settingsModal.style.display = 'none';
         });
 
         savePromptButton.addEventListener('click', () => {
@@ -780,6 +865,7 @@
                 "Concise": "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question."
             };
             savedApiKeys = {};
+            savedBaseUrls = {};
 
             document.getElementById('system-prompt').value = systemPrompt;
             document.getElementById('temperature').value = temperature;
@@ -787,6 +873,8 @@
             document.getElementById('model-selector').value = model;
             document.getElementById('memory-toggle').checked = memoryEnabled;
             document.getElementById('base-url').value = baseUrl;
+            document.getElementById('api-key-switcher').innerHTML = '';
+            document.getElementById('base-url-switcher').innerHTML = '';
 
             localStorage.removeItem('encryptedApiKey');
             localStorage.removeItem('selectedModel');
@@ -795,9 +883,11 @@
             localStorage.setItem('memoryEnabled', 'true');
             localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
             localStorage.setItem('savedApiKeys', JSON.stringify(savedApiKeys));
+            localStorage.setItem('savedBaseUrls', JSON.stringify(savedBaseUrls));
 
             updatePromptSwitcher();
             updateApiKeySwitcher();
+            updateBaseUrlSwitcher();
 
             alert('Settings have been reset to default values.');
         }
@@ -839,8 +929,13 @@
             localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
 
             const loadedApiKeys = JSON.parse(localStorage.getItem('savedApiKeys')) || {};
-            savedApiKeys = loadedApiKeys;
+            savedApiKeys = { ...savedApiKeys, ...loadedApiKeys };
             updateApiKeySwitcher();
+
+            const loadedBaseUrls = JSON.parse(localStorage.getItem('savedBaseUrls')) || {};
+            savedBaseUrls = { ...savedBaseUrls, ...loadedBaseUrls };
+            updateBaseUrlSwitcher();
+
             updatePromptSwitcher();
         });
     </script>

@@ -1,7 +1,7 @@
 <html><head><base href="https://chatwebsite.example.com/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatGPT Minimalistic</title>
+    <title>MiniChat AI</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body, html {
@@ -139,8 +139,8 @@
 
         #clear-chat-button {
             position: fixed;
-            top: 10px;
-            left: 10px;
+            top: 60px; /* Positioned below the settings button */
+            right: 10px;
             background-color: #d1e8ff; /* Light blue for circular buttons */
             border: none;
             border-radius: 50%;
@@ -370,13 +370,13 @@
 </head>
 <body>
     <div id="app">
-        <button id="clear-chat-button" title="Clear conversation">🗑️</button>
         <div id="chat-container"></div>
         <div id="input-container">
             <input type="text" id="user-input" placeholder="Type your message...">
             <button id="send-button">Send</button>
         </div>
         <button id="settings-button">⚙️</button>
+        <button id="clear-chat-button" title="Clear conversation">🗑️</button>
     </div>
     
     <div id="settings-modal">

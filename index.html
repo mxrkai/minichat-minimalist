@@ -559,6 +559,58 @@
         let conversationHistory = [];
         let memoryEnabled = true; // Changed to true
 
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (message) {
+                addMessage(message, true);
+                userInput.value = '';
+
+                if (!apiKey) {
+                    addMessage("Please set your OpenAI API key in the settings.", false);
+                    return;
+                }
+
+                try {
+                    let messages = [
+                        { role: "system", content: systemPrompt },
+                    ];
+
+                    if (memoryEnabled) {
+                        messages = messages.concat(conversationHistory);
+                    }
+
+                    messages.push({ role: "user", content: message });
+
+                    const response = await axios.post(`${baseUrl}/v1/chat/completions`, {
+                        model: model,
+                        messages: messages,
+                        temperature: temperature
+                    }, {
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const aiResponse = response.data.choices[0].message.content;
+                    addMessage(aiResponse, false);
+
+                    if (memoryEnabled) {
+                        conversationHistory.push({ role: "user", content: message });
+                        conversationHistory.push({ role: "assistant", content: aiResponse });
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    addMessage("Sorry, I couldn't process your request. Please check your API key and try again.", false);
+                }
+            }
+        }
+
+        clearChatButton.addEventListener('click', () => {
+            chatContainer.innerHTML = '';
+            conversationHistory = []; // This will clear all conversation history
+        });
+
         function updateApiKeySwitcher() {
             const apiKeySwitcher = document.getElementById('api-key-switcher');
             apiKeySwitcher.innerHTML = '<option value="">Select a saved API key</option>';
@@ -645,56 +697,6 @@
             }).catch(err => {
                 console.error('Failed to copy code: ', err);
             });
-        }
-
-        async function sendMessage() {
-            const message = userInput.value.trim();
-            if (message) {
-                addMessage(message, true);
-                userInput.value = '';
-
-                if (!apiKey) {
-                    addMessage("Please set your OpenAI API key in the settings.", false);
-                    return;
-                }
-
-                try {
-                    let messages = [
-                        { role: "system", content: systemPrompt },
-                    ];
-
-                    if (memoryEnabled) {
-                        messages = messages.concat(conversationHistory);
-                    }
-
-                    messages.push({ role: "user", content: message });
-
-                    const response = await axios.post(`${baseUrl}/v1/chat/completions`, {
-                        model: model,
-                        messages: messages,
-                        temperature: temperature
-                    }, {
-                        headers: {
-                            'Authorization': `Bearer ${apiKey}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    const aiResponse = response.data.choices[0].message.content;
-                    addMessage(aiResponse, false);
-
-                    if (memoryEnabled) {
-                        conversationHistory.push({ role: "user", content: message });
-                        conversationHistory.push({ role: "assistant", content: aiResponse });
-                        if (conversationHistory.length > 20) {
-                            conversationHistory = conversationHistory.slice(-20);
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    addMessage("Sorry, I couldn't process your request. Please check your API key and try again.", false);
-                }
-            }
         }
 
         sendButton.addEventListener('click', sendMessage);
@@ -854,11 +856,6 @@
                 apiKeyInput.type = 'password';
                 toggleApiVisibilityButton.textContent = '👁️';
             }
-        });
-
-        clearChatButton.addEventListener('click', () => {
-            chatContainer.innerHTML = '';
-            conversationHistory = [];
         });
 
         function resetSettings() {

@@ -1,7 +1,7 @@
 <html><head><base href="https://chatwebsite.example.com/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniChat AI</title>
+    <title>ChatGPT Minimalistic</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body, html {
@@ -59,6 +59,7 @@
             padding: 10px;
             border-radius: 4px;
             overflow-x: auto;
+            position: relative;
         }
         .ai-message code {
             background-color: #e0e0e0;
@@ -76,7 +77,23 @@
             margin-left: 10px;
             font-size: 14px;
         }
-        
+
+        .code-copy-icon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 2px 5px;
+            font-size: 12px;
+        }
+
+        .code-copy-icon:hover {
+            background-color: #e0e0e0;
+        }
+
         #input-container {
             position: fixed;
             bottom: 0;
@@ -462,6 +479,15 @@
                 copyIcon.title = 'Copy message';
                 copyIcon.onclick = () => copyMessage(content);
                 messageDiv.appendChild(copyIcon);
+
+                // Add copy icons to code blocks
+                messageDiv.querySelectorAll('pre').forEach(codeBlock => {
+                    const codeCopyIcon = document.createElement('span');
+                    codeCopyIcon.textContent = 'Copy';
+                    codeCopyIcon.classList.add('code-copy-icon');
+                    codeCopyIcon.onclick = (e) => copyCodeBlock(e, codeBlock);
+                    codeBlock.appendChild(codeCopyIcon);
+                });
             }
 
             chatContainer.appendChild(messageDiv);
@@ -473,6 +499,20 @@
                 alert('Message copied to clipboard!');
             }).catch(err => {
                 console.error('Failed to copy: ', err);
+            });
+        }
+
+        function copyCodeBlock(event, codeBlock) {
+            event.stopPropagation();
+            const codeContent = codeBlock.querySelector('code').textContent;
+            navigator.clipboard.writeText(codeContent).then(() => {
+                const copyIcon = codeBlock.querySelector('.code-copy-icon');
+                copyIcon.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyIcon.textContent = 'Copy';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy code: ', err);
             });
         }
 

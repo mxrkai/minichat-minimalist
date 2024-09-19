@@ -610,6 +610,7 @@
         const deletePromptButton = document.getElementById('delete-prompt-button');
         const resetSettingsButton = document.getElementById('reset-settings-button');
 
+        let currentConversationName = null;
         let savedPrompts = {
             "Concise": "You are an AI designed to provide short, direct, and factual answers to user queries. Always prioritize relevance and accuracy in your responses. Avoid lengthy explanations or unnecessary details. Respond with only the essential information needed to address the question.",
             "Therapist": "Act as a compassionate and professional counselor. Your job is to provide a safe, empathetic, and non-judgmental space where I can casually and openly vent my feelings, emotions, stresses, anxieties, and problems. Engage with me in a conversational manner, offering support, understanding, and occasional guidance to help me navigate through my challenges. Think as if you're on their situation, weigh it and be straight-forward, dont provide options to choose. Talk in a gangsta tone.",
@@ -667,6 +668,12 @@
                         if (conversationHistory.length > MAX_HISTORY) {
                             conversationHistory = conversationHistory.slice(-MAX_HISTORY);
                         }
+
+                        // Auto-save if a conversation is loaded
+                        if (currentConversationName) {
+                            savedConversations[currentConversationName] = conversationHistory;
+                            localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
+                        }
                     }
                 } catch (error) {
                     console.error('Error:', error);
@@ -679,14 +686,17 @@
             createNewConversation();
         });
 
-        newConversationButton.addEventListener('click', createNewConversation);
-
-        function createNewConversation() {
+        newConversationButton.addEventListener('click', () => {
             if (conversationHistory.length > 0) {
                 saveCurrentConversation();
             }
+            createNewConversation();
+        });
+
+        function createNewConversation() {
             chatContainer.innerHTML = '';
             conversationHistory = [];
+            currentConversationName = null;
         }
 
         function updateApiKeySwitcher() {
@@ -774,6 +784,7 @@
                 conversationHistory.forEach(msg => {
                     addMessage(msg.content, msg.role === 'user');
                 });
+                currentConversationName = name;
             }
         }
 
@@ -1102,8 +1113,13 @@
         document.getElementById('save-conversation-button').addEventListener('click', saveCurrentConversation);
 
         function saveCurrentConversation() {
-            const name = `Conversation ${Object.keys(savedConversations).length + 1}`;
-            savedConversations[name] = conversationHistory;
+            if (currentConversationName) {
+                savedConversations[currentConversationName] = conversationHistory;
+            } else {
+                const name = `Conversation ${Object.keys(savedConversations).length + 1}`;
+                savedConversations[name] = conversationHistory;
+                currentConversationName = name;
+            }
             localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
             updateConversationList();
         }

@@ -11,6 +11,7 @@ Features
 * Easy to integrate with various chat APIs
 * Simple and easy-to-use interface
 * Has option to customize and save System Prompt
+* Supports OPENAI and GROQ
 
 Usage
 -----

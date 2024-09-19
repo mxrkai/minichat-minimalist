@@ -58,8 +58,7 @@ button {
     cursor: pointer;
 }
 #delete-prompt {
-    width: 100%;
-    margin-top: 10px; 
+    margin-top: 0;
     margin-bottom: 20px;
     background-color: #dc3545;
 }
@@ -205,14 +204,6 @@ label {
 .code-copy-icon:hover {
     opacity: 1;
 }
-#prompt-selector {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 0; 
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-}
 </style>
 </head>
 <body>
@@ -267,10 +258,10 @@ let apiKey = '';
 let apiBaseUrl = 'https://api.openai.com/v1';
 let systemPrompt = 'You are a helpful assistant.';
 let selectedModel = 'gpt-4o-mini';
+let savedPrompts = {};
 let savedConversations = {};
 let currentConversation = null;
 let conversationHistory = [];
-let savedPrompts = {};
 
 function toggleSettings() {
     const settingsPanel = document.getElementById('settings-panel');
@@ -291,6 +282,9 @@ function saveSettings() {
     localStorage.setItem('apiBaseUrl', apiBaseUrl);
     localStorage.setItem('systemPrompt', systemPrompt);
     localStorage.setItem('selectedModel', selectedModel);
+    localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
+
+    toggleSettings();
 }
 
 function addMessage(content, isUser) {
@@ -440,7 +434,22 @@ function updatePromptSelector() {
         promptSelector.appendChild(option);
     }
     promptSelector.value = "";
-    deleteButton.style.display = 'none';
+    loadSelectedPrompt();
+}
+
+function loadSelectedPrompt() {
+    const promptSelector = document.getElementById('prompt-selector');
+    const systemPromptInput = document.getElementById('system-prompt');
+    const deleteButton = document.getElementById('delete-prompt');
+    const selectedPrompt = promptSelector.value;
+
+    if (selectedPrompt && savedPrompts[selectedPrompt]) {
+        systemPromptInput.value = savedPrompts[selectedPrompt];
+        deleteButton.style.display = 'block';
+    } else {
+        systemPromptInput.value = '';
+        deleteButton.style.display = 'none';
+    }
 }
 
 function deletePrompt() {
@@ -451,6 +460,7 @@ function deletePrompt() {
             delete savedPrompts[selectedPrompt];
             updatePromptSelector();
             document.getElementById('system-prompt').value = '';
+            localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
             alert('Prompt deleted successfully!');
         }
     }
@@ -506,17 +516,7 @@ document.getElementById('convo-selector').addEventListener('change', function(e)
     }
 });
 
-document.getElementById('prompt-selector').addEventListener('change', function(e) {
-    const selectedPrompt = e.target.value;
-    const deleteButton = document.getElementById('delete-prompt');
-    if (selectedPrompt && savedPrompts[selectedPrompt]) {
-        document.getElementById('system-prompt').value = savedPrompts[selectedPrompt];
-        deleteButton.style.display = 'block';
-    } else {
-        deleteButton.style.display = 'none';
-    }
-});
-
+document.getElementById('prompt-selector').addEventListener('change', loadSelectedPrompt);
 document.getElementById('delete-prompt').addEventListener('click', deletePrompt);
 document.getElementById('delete-convo').addEventListener('click', deleteConversation);
 
@@ -532,31 +532,21 @@ window.addEventListener('load', () => {
     const savedApiBaseUrl = localStorage.getItem('apiBaseUrl');
     const savedSystemPrompt = localStorage.getItem('systemPrompt');
     const savedModel = localStorage.getItem('selectedModel');
+    const savedPromptsJSON = localStorage.getItem('savedPrompts');
     const savedConversationsJSON = localStorage.getItem('savedConversations');
 
-    if (savedApiKey) {
-        document.getElementById('api-key').value = savedApiKey;
-        apiKey = savedApiKey;
-    }
-    if (savedApiBaseUrl) {
-        document.getElementById('api-base-url').value = savedApiBaseUrl;
-        apiBaseUrl = savedApiBaseUrl;
-    }
-    if (savedSystemPrompt) {
-        document.getElementById('system-prompt').value = savedSystemPrompt;
-        systemPrompt = savedSystemPrompt;
-    }
-    if (savedModel) {
-        document.getElementById('model-selector').value = savedModel;
-        selectedModel = savedModel;
+    if (savedApiKey) document.getElementById('api-key').value = savedApiKey;
+    if (savedApiBaseUrl) document.getElementById('api-base-url').value = savedApiBaseUrl;
+    if (savedSystemPrompt) document.getElementById('system-prompt').value = savedSystemPrompt;
+    if (savedModel) document.getElementById('model-selector').value = savedModel;
+    if (savedPromptsJSON) {
+        savedPrompts = JSON.parse(savedPromptsJSON);
+        updatePromptSelector();
     }
     if (savedConversationsJSON) {
         savedConversations = JSON.parse(savedConversationsJSON);
         updateConvoSelector();
     }
-
-    // Auto-save settings
-    saveSettings();
 
     addMessage('# Welcome to the AI Chat Interface! \n\nHow can I assist you today? Feel free to ask me anything, and I\'ll do my best to help.\n\n**Here are some things I can do:**\n\n- Answer questions on various topics\n- Help with problem-solving\n- Provide explanations and examples\n- Assist with writing and editing\n- Offer creative ideas and suggestions\n\nJust type your message in the input box below and hit send!', false);
 });

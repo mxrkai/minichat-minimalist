@@ -479,16 +479,6 @@
         .rename-conversation:hover, .delete-conversation:hover {
             background-color: #b3d9ff;
         }
-
-        #save-conversation-button {
-            margin-top: 10px;
-            padding: 5px 10px;
-            background-color: #4da6ff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -581,7 +571,6 @@
                 <button id="rename-conversation-button">Rename</button>
                 <button id="delete-conversation-button">Delete</button>
             </div>
-            <button id="save-conversation-button">Save Current Conversation</button>
         </div>
     </div>
 
@@ -669,11 +658,15 @@
                             conversationHistory = conversationHistory.slice(-MAX_HISTORY);
                         }
 
-                        // Auto-save if a conversation is loaded
+                        // Auto-save if a conversation is loaded or create a new one
                         if (currentConversationName) {
                             savedConversations[currentConversationName] = conversationHistory;
-                            localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
+                        } else {
+                            currentConversationName = `Conversation ${Object.keys(savedConversations).length + 1}`;
+                            savedConversations[currentConversationName] = conversationHistory;
                         }
+                        localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
+                        updateConversationList();
                     }
                 } catch (error) {
                     console.error('Error:', error);
@@ -687,9 +680,6 @@
         });
 
         newConversationButton.addEventListener('click', () => {
-            if (conversationHistory.length > 0) {
-                saveCurrentConversation();
-            }
             createNewConversation();
         });
 
@@ -697,6 +687,7 @@
             chatContainer.innerHTML = '';
             conversationHistory = [];
             currentConversationName = null;
+            // No need to save the current conversation here
         }
 
         function updateApiKeySwitcher() {
@@ -1109,20 +1100,6 @@
             savedConversations = { ...savedConversations, ...loadedConversations };
             updateConversationList();
         });
-
-        document.getElementById('save-conversation-button').addEventListener('click', saveCurrentConversation);
-
-        function saveCurrentConversation() {
-            if (currentConversationName) {
-                savedConversations[currentConversationName] = conversationHistory;
-            } else {
-                const name = `Conversation ${Object.keys(savedConversations).length + 1}`;
-                savedConversations[name] = conversationHistory;
-                currentConversationName = name;
-            }
-            localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
-            updateConversationList();
-        }
     </script>
 </body>
 </html>

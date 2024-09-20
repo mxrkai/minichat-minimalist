@@ -360,8 +360,9 @@ async function sendMessage() {
         
         conversationHistory.push({ role: 'assistant', content: aiMessage });
 
-        if (conversationHistory.length > 999) {
-            conversationHistory = conversationHistory.slice(-999);
+        // Keep only the last 12 messages
+        if (conversationHistory.length > 12) {
+            conversationHistory = conversationHistory.slice(-12);
         }
 
         autoSaveConversation();

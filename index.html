@@ -339,6 +339,10 @@ async function sendMessage() {
 
     conversationHistory.push({ role: 'user', content: userMessage });
 
+    if (conversationHistory.length > 10) {
+        conversationHistory = conversationHistory.slice(-10);
+    }
+
     try {
         const messages = [
             { role: 'system', content: systemPrompt },
@@ -360,9 +364,8 @@ async function sendMessage() {
         
         conversationHistory.push({ role: 'assistant', content: aiMessage });
 
-        // Keep only the last 12 messages
-        if (conversationHistory.length > 12) {
-            conversationHistory = conversationHistory.slice(-12);
+        if (conversationHistory.length > 10) {
+            conversationHistory = conversationHistory.slice(-10);
         }
 
         autoSaveConversation();

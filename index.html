@@ -262,6 +262,98 @@ let savedPrompts = {};
 let savedConversations = {};
 let currentConversation = null;
 let conversationHistory = [];
+let temperature = 0.6;
+let top_p = 1;
+
+function trimConversationHistory(history, maxTokens = 3000) {
+    let totalTokens = 0;
+    let trimmedHistory = [];
+
+    for (let i = history.length - 1; i >= 0; i--) {
+        const message = history[i];
+        const messageTokens = message.content.split(' ').length; 
+        if (totalTokens + messageTokens > maxTokens) {
+            break;
+        }
+        totalTokens += messageTokens;
+        trimmedHistory.unshift(message);
+    }
+
+    return trimmedHistory;
+}
+
+async function sendMessage() {
+    const userInput = document.getElementById('user-input');
+    const userMessage = userInput.value.trim();
+    if (userMessage === '') return;
+
+    addMessage(userMessage, true);
+    userInput.value = '';
+
+    conversationHistory.push({ role: 'user', content: userMessage });
+
+    try {
+        const trimmedHistory = trimConversationHistory(conversationHistory);
+        const messages = [
+            { role: 'system', content: systemPrompt },
+            ...trimmedHistory
+        ];
+
+        const response = await axios.post(`${apiBaseUrl}/chat/completions`, {
+            model: selectedModel,
+            messages: messages,
+            temperature: temperature,
+            top_p: top_p
+        }, {
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const aiMessage = response.data.choices[0].message.content;
+        addMessage(aiMessage, false);
+        
+        conversationHistory.push({ role: 'assistant', content: aiMessage });
+
+        autoSaveConversation();
+    } catch (error) {
+        console.error('Error:', error);
+        addMessage('Sorry, there was an error processing your request.', false);
+    }
+}
+
+function startNewConversation() {
+    const messagesContainer = document.getElementById('chat-messages');
+    messagesContainer.innerHTML = '';
+    document.getElementById('user-input').value = '';
+    conversationHistory = [];
+    addMessage('New conversation started. How can I assist you?', false);
+    currentConversation = null;
+}
+
+function autoSaveConversation() {
+    if (currentConversation) {
+        const messages = document.getElementById('chat-messages').innerHTML;
+        savedConversations[currentConversation] = messages;
+        localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
+    }
+}
+
+function loadConversation(convoName) {
+    if (savedConversations[convoName]) {
+        document.getElementById('chat-messages').innerHTML = savedConversations[convoName];
+        currentConversation = convoName;
+
+        const messages = document.getElementById('chat-messages').querySelectorAll('.message');
+        conversationHistory = Array.from(messages).map(msg => {
+            const role = msg.classList.contains('user-message') ? 'user' : 'assistant';
+            return { role, content: msg.textContent };
+        });
+
+        conversationHistory = trimConversationHistory(conversationHistory);
+    }
+}
 
 function toggleSettings() {
     const settingsPanel = document.getElementById('settings-panel');
@@ -283,6 +375,8 @@ function saveSettings() {
     localStorage.setItem('systemPrompt', systemPrompt);
     localStorage.setItem('selectedModel', selectedModel);
     localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
+    localStorage.setItem('temperature', temperature.toString());
+    localStorage.setItem('top_p', top_p.toString());
 
     toggleSettings();
 }
@@ -327,82 +421,6 @@ function addMessage(content, isUser) {
     
     messagesContainer.appendChild(messageElement);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-async function sendMessage() {
-    const userInput = document.getElementById('user-input');
-    const userMessage = userInput.value.trim();
-    if (userMessage === '') return;
-
-    addMessage(userMessage, true);
-    userInput.value = '';
-
-    conversationHistory.push({ role: 'user', content: userMessage });
-
-    if (conversationHistory.length > 10) {
-        conversationHistory = conversationHistory.slice(-10);
-    }
-
-    try {
-        const messages = [
-            { role: 'system', content: systemPrompt },
-            ...conversationHistory
-        ];
-
-        const response = await axios.post(`${apiBaseUrl}/chat/completions`, {
-            model: selectedModel,
-            messages: messages
-        }, {
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        const aiMessage = response.data.choices[0].message.content;
-        addMessage(aiMessage, false);
-        
-        conversationHistory.push({ role: 'assistant', content: aiMessage });
-
-        if (conversationHistory.length > 10) {
-            conversationHistory = conversationHistory.slice(-10);
-        }
-
-        autoSaveConversation();
-    } catch (error) {
-        console.error('Error:', error);
-        addMessage('Sorry, there was an error processing your request.', false);
-    }
-}
-
-function startNewConversation() {
-    const messagesContainer = document.getElementById('chat-messages');
-    messagesContainer.innerHTML = '';
-    document.getElementById('user-input').value = '';
-    conversationHistory = [];
-    addMessage('New conversation started. How can I assist you?', false);
-    currentConversation = null;
-}
-
-function autoSaveConversation() {
-    if (currentConversation) {
-        const messages = document.getElementById('chat-messages').innerHTML;
-        savedConversations[currentConversation] = messages;
-        localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
-    }
-}
-
-function loadConversation(convoName) {
-    if (savedConversations[convoName]) {
-        document.getElementById('chat-messages').innerHTML = savedConversations[convoName];
-        currentConversation = convoName;
-
-        const messages = document.getElementById('chat-messages').querySelectorAll('.message');
-        conversationHistory = Array.from(messages).map(msg => {
-            const role = msg.classList.contains('user-message') ? 'user' : 'assistant';
-            return { role, content: msg.textContent };
-        });
-    }
 }
 
 function toggleSavePrompt() {
@@ -508,7 +526,6 @@ function deleteConversation() {
     }
 }
 
-// Add event listeners
 document.getElementById('convo-selector').addEventListener('change', function(e) {
     const selectedConvo = e.target.value;
     const deleteButton = document.getElementById('delete-convo');
@@ -530,7 +547,6 @@ document.getElementById('user-input').addEventListener('keypress', function(e) {
     }
 });
 
-// Load saved settings on page load
 window.addEventListener('load', () => {
     const savedApiKey = localStorage.getItem('apiKey');
     const savedApiBaseUrl = localStorage.getItem('apiBaseUrl');
@@ -538,6 +554,8 @@ window.addEventListener('load', () => {
     const savedModel = localStorage.getItem('selectedModel');
     const savedPromptsJSON = localStorage.getItem('savedPrompts');
     const savedConversationsJSON = localStorage.getItem('savedConversations');
+    const savedTemperature = localStorage.getItem('temperature');
+    const savedTopP = localStorage.getItem('top_p');
 
     if (savedApiKey) document.getElementById('api-key').value = savedApiKey;
     if (savedApiBaseUrl) document.getElementById('api-base-url').value = savedApiBaseUrl;
@@ -551,7 +569,9 @@ window.addEventListener('load', () => {
         savedConversations = JSON.parse(savedConversationsJSON);
         updateConvoSelector();
     }
-
+    if (savedTemperature) temperature = parseFloat(savedTemperature);
+    if (savedTopP) top_p = parseFloat(savedTopP);
+    
     addMessage('# Welcome to the AI Chat Interface! \n\nHow can I assist you today? Feel free to ask me anything, and I\'ll do my best to help.\n\n**Here are some things I can do:**\n\n- Answer questions on various topics\n- Help with problem-solving\n- Provide explanations and examples\n- Assist with writing and editing\n- Offer creative ideas and suggestions\n\nJust type your message in the input box below and hit send!', false);
 });
 </script>

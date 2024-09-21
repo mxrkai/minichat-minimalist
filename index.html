@@ -265,7 +265,7 @@ let conversationHistory = [];
 let temperature = 0.6;
 let top_p = 1;
 
-function trimConversationHistory(history, maxTokens = 3000) {
+function trimConversationHistory(history, maxTokens = 32000) {
     let totalTokens = 0;
     let trimmedHistory = [];
 

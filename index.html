@@ -21,22 +21,25 @@ body, html {
 }
 .message {
     margin-bottom: 15px;
-    padding: 15px;
-    border-radius: 15px;
+    padding: 15px 20px;
+    border-radius: 18px;
     max-width: 90%;
     position: relative;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 .user-message {
-    background-color: #007bff;
-    color: white;
+    background-color: #e6f3e6;
+    color: #333;
     align-self: flex-end;
     margin-left: auto;
+    border-bottom-right-radius: 4px;
 }
 .ai-message {
-    background-color: #f1f0f0;
-    color: black;
+    background-color: #e6f2ff; /* Changed to a very light shade of blue */
+    color: #333;
     align-self: flex-start;
     margin-right: auto;
+    border-bottom-left-radius: 4px;
 }
 .input-area {
     display: flex;
@@ -614,7 +617,7 @@ window.addEventListener('load', () => {
         updateConvoSelector();
     }
 
-    addMessage('# Welcome to the AI Chat Interface! \n\nHow can I assist you today? Feel free to ask me anything, and I\'ll do my best to help.\n\n**Here are some things I can do:**\n\n- Answer questions on various topics\n- Help with problem-solving\n- Provide explanations and examples\n- Assist with writing and editing\n- Offer creative ideas and suggestions\n\nJust type your message in the input box below and hit send!', false);
+    addMessage('Hello, how can I assist you?', false);
 });
 </script>
 </body></html>

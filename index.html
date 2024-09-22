@@ -283,6 +283,24 @@ let useMemory = false;
 let maxTokens = 4098;
 let temperature = 0.6;
 
+function handleError(error) {
+    if (error.response) {
+        if (error.response.status === 401) {
+            return "Authentication error. Please check your API key.";
+        } else if (error.response.status === 429) {
+            return "Rate limit exceeded. Please try again later.";
+        } else if (error.response.status >= 500) {
+            return "Server error. Please try again later.";
+        } else {
+            return `Error ${error.response.status}: ${error.response.data.error?.message || 'Unknown error'}`;
+        }
+    } else if (error.request) {
+        return "No response received from the server. Please check your internet connection.";
+    } else {
+        return `Error: ${error.message}`;
+    }
+}
+
 function toggleSettings() {
     const settingsPanel = document.getElementById('settings-panel');
     if (settingsPanel.style.display === 'none' || settingsPanel.style.display === '') {
@@ -400,7 +418,8 @@ async function sendMessage() {
         autoSaveConversation();
     } catch (error) {
         console.error('Error:', error);
-        addMessage('Sorry, there was an error processing your request.', false);
+        const errorMessage = handleError(error);
+        addMessage(errorMessage, false);
     }
 }
 

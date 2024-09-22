@@ -317,14 +317,41 @@ function saveSettings() {
     selectedModel = document.getElementById('model-selector').value;
     useMemory = document.getElementById('memory-switch').checked;
 
-    localStorage.setItem('apiKey', apiKey);
-    localStorage.setItem('apiBaseUrl', apiBaseUrl);
-    localStorage.setItem('systemPrompt', systemPrompt);
-    localStorage.setItem('selectedModel', selectedModel);
-    localStorage.setItem('useMemory', useMemory);
-    localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
+    const settings = {
+        apiKey,
+        apiBaseUrl,
+        systemPrompt,
+        selectedModel,
+        useMemory,
+        savedPrompts,
+        timestamp: Date.now()
+    };
+
+    localStorage.setItem('latestSettings', JSON.stringify(settings));
 
     toggleSettings();
+}
+
+function loadLatestSettings() {
+    const latestSettingsJSON = localStorage.getItem('latestSettings');
+    if (latestSettingsJSON) {
+        const settings = JSON.parse(latestSettingsJSON);
+        
+        document.getElementById('api-key').value = settings.apiKey || '';
+        document.getElementById('api-base-url').value = settings.apiBaseUrl || 'https://api.openai.com/v1';
+        document.getElementById('system-prompt').value = settings.systemPrompt || 'You are a helpful assistant.';
+        document.getElementById('model-selector').value = settings.selectedModel || 'gpt-4o-mini';
+        document.getElementById('memory-switch').checked = settings.useMemory || false;
+
+        apiKey = settings.apiKey;
+        apiBaseUrl = settings.apiBaseUrl;
+        systemPrompt = settings.systemPrompt;
+        selectedModel = settings.selectedModel;
+        useMemory = settings.useMemory;
+        savedPrompts = settings.savedPrompts || {};
+
+        updatePromptSelector();
+    }
 }
 
 function addMessage(content, isUser) {
@@ -580,23 +607,8 @@ document.getElementById('user-input').addEventListener('keypress', function(e) {
 
 // Load saved settings on page load
 window.addEventListener('load', () => {
-    const savedApiKey = localStorage.getItem('apiKey');
-    const savedApiBaseUrl = localStorage.getItem('apiBaseUrl');
-    const savedSystemPrompt = localStorage.getItem('systemPrompt');
-    const savedModel = localStorage.getItem('selectedModel');
-    const savedMemory = localStorage.getItem('useMemory');
-    const savedPromptsJSON = localStorage.getItem('savedPrompts');
+    loadLatestSettings();
     const savedConversationsJSON = localStorage.getItem('savedConversations');
-
-    if (savedApiKey) document.getElementById('api-key').value = savedApiKey;
-    if (savedApiBaseUrl) document.getElementById('api-base-url').value = savedApiBaseUrl;
-    if (savedSystemPrompt) document.getElementById('system-prompt').value = savedSystemPrompt;
-    if (savedModel) document.getElementById('model-selector').value = savedModel;
-    if (savedMemory !== null) document.getElementById('memory-switch').checked = JSON.parse(savedMemory);
-    if (savedPromptsJSON) {
-        savedPrompts = JSON.parse(savedPromptsJSON);
-        updatePromptSelector();
-    }
     if (savedConversationsJSON) {
         savedConversations = JSON.parse(savedConversationsJSON);
         updateConvoSelector();

@@ -1,694 +1,589 @@
-<html><head><base href="https://chatinterface.example.com/">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Modern Chat Interface with OpenAI API</title>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css">
-<style>
-  :root {
-    --primary-color: #4a90e2;
-    --secondary-color: #f5f7fa;
-    --text-color: #333;
-    --background-color: #ffffff;
-    --accent-color: #6c5ce7;
-    --error-color: #e74c3c;
-    --success-color: #2ecc71;
-  }
-
-  * {
-    box-sizing: border-box;
+<html><head><base href="https://haakohu.github.io/websim/"><title>AI Chat Interface</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css"><style>
+body, html {
+    height: 100%;
     margin: 0;
-    padding: 0;
-  }
-
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    line-height: 1.6;
-  }
-
-  .chat-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px;
-    height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+.chat-container {
     display: flex;
     flex-direction: column;
-  }
-
-  .chat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 10px 0;
-    border-bottom: 2px solid var(--secondary-color);
-  }
-
-  .header-left {
-    display: flex;
-    align-items: center;
-  }
-
-  .chat-logo {
-    width: 40px;
-    height: 40px;
-    margin-right: 10px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-
-  .chat-title {
-    font-size: 28px;
-    font-weight: 600;
-    color: var(--primary-color);
-  }
-
-  .header-icons {
-    display: flex;
-    gap: 10px;
-  }
-
-  .icon-button {
-    cursor: pointer;
-    font-size: 24px;
-    background: var(--secondary-color);
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-
-  .icon-button:hover {
-    background-color: var(--primary-color);
-    color: var(--background-color);
-  }
-
-  .chat-messages {
-    flex-grow: 1;
+    height: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.chat-messages {
+    flex: 1;
     overflow-y: auto;
     padding: 20px;
-    background-color: var(--secondary-color);
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .message {
-    max-width: 80%;
-    margin-bottom: 20px;
+}
+.message {
+    margin-bottom: 15px;
     padding: 15px;
-    border-radius: 20px;
-    font-size: 16px;
-    line-height: 1.4;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    max-width: 90%;
     position: relative;
-  }
-
-  .user-message {
-    background-color: var(--primary-color);
+}
+.user-message {
+    background-color: #007bff;
     color: white;
     align-self: flex-end;
     margin-left: auto;
-    border-bottom-right-radius: 0;
-  }
-
-  .ai-message {
-    background-color: white;
-    color: var(--text-color);
+}
+.ai-message {
+    background-color: #f1f0f0;
+    color: black;
     align-self: flex-start;
-    border-bottom-left-radius: 0;
-  }
-
-  .chat-input {
+    margin-right: auto;
+}
+.input-area {
     display: flex;
-    margin-top: 20px;
-  }
-
-  #user-input {
-    flex-grow: 1;
-    padding: 15px;
-    border: none;
-    border-radius: 25px;
-    font-size: 16px;
-    background-color: var(--secondary-color);
-    transition: box-shadow 0.3s ease;
-  }
-
-  #user-input:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--primary-color);
-  }
-
-  #send-button {
-    padding: 15px 30px;
-    background-color: var(--primary-color);
+    padding: 10px;
+    border-top: 1px solid #ccc;
+}
+#user-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    margin-right: 10px;
+}
+button {
+    background-color: #007bff;
     color: white;
     border: none;
-    border-radius: 25px;
-    margin-left: 10px;
+    padding: 10px 20px;
+    border-radius: 20px;
     cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
-  }
-
-  #send-button:hover {
-    background-color: var(--accent-color);
-  }
-
-  .settings-modal {
+}
+#delete-prompt {
+    margin-top: 0;
+    margin-bottom: 20px;
+    background-color: #dc3545;
+}
+.icon-container {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    z-index: 1000;
+}
+.icon {
+    font-size: 24px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    background-color: white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.settings-panel {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--background-color);
-    z-index: 1000;
+    background-color: white;
+    padding: 20px;
+    box-sizing: border-box;
     overflow-y: auto;
-  }
-
-  .settings-content {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 40px 20px;
+    z-index: 1001;
+}
+.settings-panel input, .settings-panel select, .settings-panel textarea {
     width: 100%;
-    box-shadow: none;
-  }
-
-  .settings-content h2 {
-    color: var(--primary-color);
-    margin-bottom: 30px;
-    font-size: 24px;
-    font-weight: 600;
-  }
-
-  .settings-field {
-    margin-bottom: 25px;
-  }
-
-  .settings-field label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: var(--text-color);
-  }
-
-  .settings-field input,
-  .settings-field select,
-  .settings-field textarea {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid var(--secondary-color);
-    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
     font-size: 16px;
-    transition: border-color 0.3s ease;
-  }
-
-  .settings-field input:focus,
-  .settings-field select:focus,
-  .settings-field textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
-  }
-
-  .settings-field textarea {
-    resize: vertical;
-    min-height: 100px;
-  }
-
-  .save-button {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    display: block;
+}
+.settings-panel button {
     width: 100%;
     margin-top: 20px;
-  }
-
-  .save-button:hover {
-    background-color: var(--accent-color);
-  }
-
-  .save-custom-prompt-button {
-    background-color: var(--success-color);
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    font-size: 14px;
-    font-weight: 600;
+}
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.settings-title {
+    font-size: 24px;
+    font-weight: bold;
+}
+.close-settings {
+    font-size: 24px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 10px;
-  }
-
-  .save-custom-prompt-button:hover {
-    background-color: #27ae60;
-  }
-
-  .remove-prompt-button {
-    background-color: var(--error-color);
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-left: 10px;
-  }
-
-  .remove-prompt-button:hover {
-    background-color: #c0392b;
-  }
-
-  .close-settings {
+}
+.overlay {
+    display: none;
     position: fixed;
-    top: 20px;
-    right: 20px;
-    font-size: 32px;
-    color: var(--primary-color);
-  }
-
-  .copy-icon {
-    cursor: pointer;
-    font-size: 16px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+.copy-icon {
     position: absolute;
     bottom: 5px;
     right: 5px;
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 5px;
-    border-radius: 50%;
-  }
-
-  pre {
-    position: relative;
-    padding: 10px;
-    background-color: #f4f4f4;
-    border-radius: 5px;
-  }
-
-  .switch {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    height: 34px;
-  }
-
-  .switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .slider {
-    position: absolute;
     cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: .4s;
-  }
-
-  .slider:before {
+    font-size: 16px;
+    opacity: 0.7;
+}
+.copy-icon:hover {
+    opacity: 1;
+}
+.ai-message pre {
+    background-color: #f4f4f4;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+    position: relative;
+}
+.ai-message code {
+    font-family: 'Courier New', Courier, monospace;
+}
+.system-prompt-container {
+    position: relative;
+}
+.save-prompt-icon {
     position: absolute;
-    content: "";
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: .4s;
-  }
-
-  input:checked + .slider {
-    background-color: var(--primary-color);
-  }
-
-  input:checked + .slider:before {
-    transform: translateX(26px);
-  }
-
-  .slider.round {
-    border-radius: 34px;
-  }
-
-  .slider.round:before {
-    border-radius: 50%;
-  }
-
-  @media (max-width: 768px) {
-    .chat-container {
-      padding: 10px;
-    }
-
-    .settings-content {
-      width: 95%;
-      margin: 10% auto;
-      padding: 20px;
-    }
-
-    .message {
-      max-width: 90%;
-    }
-  }
+    bottom: 25px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 20px;
+    opacity: 0.7;
+}
+.save-prompt-icon:hover {
+    opacity: 1;
+}
+.save-convo-icon {
+    margin-top: 10px;
+}
+#convo-selector {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+#delete-convo {
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    background-color: #dc3545;
+}
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+.memory-toggle {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.memory-toggle label {
+    margin-right: 10px;
+}
+#memory-switch {
+    width: auto;
+    margin-bottom: 0;
+}
+.code-copy-icon {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    opacity: 0.7;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 2px;
+    border-radius: 3px;
+}
+.code-copy-icon:hover {
+    opacity: 1;
+}
 </style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="chat-header">
-      <div class="header-left">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3TNUlWOFBBSfQ9teMVHKRAdZdNemEJF-1oAPPF6XbJUQURDtN4ZIwZn5W&s=10" alt="Chatbot logo" class="chat-logo">
-        <h1 class="chat-title">Chatbot UI</h1>
-      </div>
-      <div class="header-icons">
-        <div class="icon-button" onclick="toggleSettings()">⚙️</div>
-        <div class="icon-button" onclick="resetConversation()">⛔</div>
-      </div>
-    </div>
+<div class="chat-container">
     <div class="chat-messages" id="chat-messages"></div>
-    <div class="chat-input">
-      <input type="text" id="user-input" placeholder="Type your message...">
-      <button id="send-button" onclick="sendMessage()">Send</button>
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
     </div>
-  </div>
+</div>
 
-  <div class="settings-modal" id="settings-modal">
-    <div class="settings-content">
-      <button class="close-settings" onclick="toggleSettings()">×</button>
-      <h2>Chat Settings</h2>
-      <div class="settings-field">
-        <label for="api-key">OpenAI API Key:</label>
-        <input type="password" id="api-key" placeholder="Enter your API key">
-      </div>
-      <div class="settings-field">
-        <label for="api-base-url">API Base URL:</label>
-        <input type="text" id="api-base-url" value="https://api.openai.com/v1">
-      </div>
-      <div class="settings-field">
-        <label for="system-prompt-select">Select System Prompt:</label>
-        <div id="system-prompt-container">
-          <select id="system-prompt-select" onchange="updateSystemPrompt()">
-            <option value="default">Default</option>
-          </select>
-          <button id="remove-prompt-button" class="remove-prompt-button" onclick="removeCustomPrompt()" style="display: none;">Remove</button>
-        </div>
-      </div>
-      <div class="settings-field">
-        <label for="custom-prompt-name">Custom Prompt Name:</label>
-        <input type="text" id="custom-prompt-name" placeholder="Enter a name for your custom prompt">
-      </div>
-      <div class="settings-field">
-        <label for="system-prompt">System Prompt:</label>
-        <textarea id="system-prompt">You are a helpful assistant.</textarea>
-        <button class="save-custom-prompt-button" onclick="saveCustomPrompt()">Save Custom Prompt</button>
-      </div>
-      <div class="settings-field">
-        <label for="model-select">Model:</label>
-        <select id="model-select">
-          <option value="gpt-4o-mini">gpt-4o-mini</option>
-          <option value="gpt-4o">gpt-4o</option>
-          <option value="gemma2-9b-it">gemma2-9b-it</option>
-          <option value="llama3-groq-70b-8192-tool-use-preview">llama3-groq-70b-8192-tool-use-preview</option>
-          <option value="mixtral-8x7b-32768">mixtral-8x7b-32768</option>
-        </select>
-      </div>
-      <div class="settings-field">
-        <label for="memory-toggle">Memory:</label>
-        <label class="switch">
-          <input type="checkbox" id="memory-toggle">
-          <span class="slider round"></span>
-        </label>
-      </div>
-      <button class="save-button" onclick="saveSettings()">Save Settings</button>
+<div class="icon-container">
+    <div class="icon settings-icon" onclick="toggleSettings()" title="Settings">⚙️</div>
+    <div class="icon new-chat-icon" onclick="startNewConversation()" title="New Conversation">+</div>
+    <div class="icon save-convo-icon" onclick="saveConversation()" title="Save Conversation">🏷️</div>
+</div>
+
+<div class="settings-panel" id="settings-panel">
+    <div class="settings-header">
+        <div class="settings-title">Settings</div>
+        <div class="close-settings" onclick="toggleSettings()">×</div>
     </div>
-  </div>
+    <input type="text" id="api-key" placeholder="API Key">
+    <input type="text" id="api-base-url" placeholder="API Base URL">
+    <div class="system-prompt-container">
+        <textarea id="system-prompt" placeholder="System Prompt" rows="4"></textarea>
+        <span class="save-prompt-icon" onclick="toggleSavePrompt()" title="Save Prompt">💾</span>
+    </div>
+    <label for="prompt-selector">Prompt Selector:</label>
+    <select id="prompt-selector">
+        <option value="">Select a prompt</option>
+    </select>
+    <button id="delete-prompt" style="display: none;">Delete Prompt</button>
+    <label for="model-selector">Models:</label>
+    <select id="model-selector">
+        <option value="gpt-4o-mini">gpt-4o-mini</option>
+        <option value="gpt-4o">gpt-4o</option>
+        <option value="gemma2-9b-it">gemma2-9b-it</option>
+        <option value="llama3-groq-70b-8192-tool-use-preview">llama3-groq-70b-8192-tool-use-preview</option>
+        <option value="mixtral-8x7b-32768">mixtral-8x7b-32768</option>
+    </select>
+    <div class="memory-toggle">
+        <label for="memory-switch">Memory:</label>
+        <input type="checkbox" id="memory-switch">
+    </div>
+    <label for="convo-selector">Conversation Selector:</label>
+    <select id="convo-selector">
+        <option value="">Select a conversation</option>
+    </select>
+    <button id="delete-convo" style="display: none;">Delete Conversation</button>
+    <button onclick="saveSettings()">Save Settings</button>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script>
-    const chatMessages = document.getElementById('chat-messages');
-    const userInput = document.getElementById('user-input');
-    const settingsModal = document.getElementById('settings-modal');
-    const systemPromptSelect = document.getElementById('system-prompt-select');
-    const systemPromptTextarea = document.getElementById('system-prompt');
-    const customPromptNameInput = document.getElementById('custom-prompt-name');
+<script>
+let apiKey = '';
+let apiBaseUrl = 'https://api.openai.com/v1';
+let systemPrompt = 'You are a helpful assistant.';
+let selectedModel = 'gpt-4o-mini';
+let savedPrompts = {};
+let savedConversations = {};
+let currentConversation = null;
+let conversationHistory = [];
+let useMemory = false;
+let maxTokens = 4098;
+let temperature = 0.6;
 
-    let apiKey = '';
-    let apiBaseUrl = 'https://api.openai.com/v1';
-    let systemPrompt = 'You are a helpful assistant.';
-    let selectedModel = 'gpt-4o-mini';
-    let customSystemPrompt = '';
-    let customPrompts = {};
-    let messageHistory = [];
-    let useMemory = false;
-    let maxTokens = 4098;
-    let temperature = 0.6;
-
-    function toggleSettings() {
-      if (settingsModal.style.display === 'none' || settingsModal.style.display === '') {
-        settingsModal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-      } else {
-        settingsModal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-      }
+function toggleSettings() {
+    const settingsPanel = document.getElementById('settings-panel');
+    if (settingsPanel.style.display === 'none' || settingsPanel.style.display === '') {
+        settingsPanel.style.display = 'block';
+    } else {
+        settingsPanel.style.display = 'none';
     }
+}
 
-    function updateSystemPrompt() {
-      const selectedPrompt = systemPromptSelect.value;
-      const removeButton = document.getElementById('remove-prompt-button');
-      
-      if (selectedPrompt === 'default') {
-        systemPromptTextarea.value = 'You are a helpful assistant.';
-        systemPromptTextarea.disabled = true;
-        removeButton.style.display = 'none';
-      } else {
-        systemPromptTextarea.value = customPrompts[selectedPrompt] || '';
-        systemPromptTextarea.disabled = false;
-        removeButton.style.display = 'inline-block';
-      }
-      
-      customPromptNameInput.value = selectedPrompt !== 'default' ? selectedPrompt : '';
-    }
+function saveSettings() {
+    apiKey = document.getElementById('api-key').value;
+    apiBaseUrl = document.getElementById('api-base-url').value;
+    systemPrompt = document.getElementById('system-prompt').value;
+    selectedModel = document.getElementById('model-selector').value;
+    useMemory = document.getElementById('memory-switch').checked;
 
-    function saveCustomPrompt() {
-      const promptName = customPromptNameInput.value.trim();
-      const promptContent = systemPromptTextarea.value.trim();
-      
-      if (promptName && promptContent) {
-        customPrompts[promptName] = promptContent;
-        updatePromptSelector();
-        localStorage.setItem('customPrompts', JSON.stringify(customPrompts));
-        alert('Custom prompt saved successfully!');
-      } else {
-        alert('Please enter both a name and content for the custom prompt.');
-      }
-    }
+    localStorage.setItem('apiKey', apiKey);
+    localStorage.setItem('apiBaseUrl', apiBaseUrl);
+    localStorage.setItem('systemPrompt', systemPrompt);
+    localStorage.setItem('selectedModel', selectedModel);
+    localStorage.setItem('useMemory', useMemory);
+    localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
 
-    function updatePromptSelector() {
-      const select = document.getElementById('system-prompt-select');
-      const removeButton = document.getElementById('remove-prompt-button');
-      select.innerHTML = '<option value="default">Default</option>';
-      
-      for (const [name, _] of Object.entries(customPrompts)) {
-        const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
-        select.appendChild(option);
-      }
+    toggleSettings();
+}
 
-      updateSystemPrompt();
-    }
-
-    function removeCustomPrompt() {
-      const selectedPrompt = systemPromptSelect.value;
-      
-      if (selectedPrompt !== 'default') {
-        delete customPrompts[selectedPrompt];
-        updatePromptSelector();
-        localStorage.setItem('customPrompts', JSON.stringify(customPrompts));
-        alert('Custom prompt removed successfully!');
-      }
-    }
-
-    function saveSettings() {
-      apiKey = document.getElementById('api-key').value;
-      apiBaseUrl = document.getElementById('api-base-url').value;
-      selectedModel = document.getElementById('model-select').value;
-      useMemory = document.getElementById('memory-toggle').checked;
-
-      const selectedPrompt = systemPromptSelect.value;
-      if (selectedPrompt !== 'default') {
-        systemPrompt = customPrompts[selectedPrompt];
-      } else {
-        systemPrompt = 'You are a helpful assistant.';
-      }
-
-      localStorage.setItem('apiKey', apiKey);
-      localStorage.setItem('apiBaseUrl', apiBaseUrl);
-      localStorage.setItem('systemPrompt', systemPrompt);
-      localStorage.setItem('selectedModel', selectedModel);
-      localStorage.setItem('useMemory', useMemory);
-      localStorage.setItem('customPrompts', JSON.stringify(customPrompts));
-      localStorage.setItem('selectedPrompt', selectedPrompt);
-
-      toggleSettings();
-    }
-
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        alert('Copied to clipboard!');
-      }).catch(err => {
-        console.error('Failed to copy text: ', err);
-      });
-    }
-
-    function addMessage(content, isUser) {
-      const messageDiv = document.createElement('div');
-      messageDiv.classList.add('message');
-      messageDiv.classList.add(isUser ? 'user-message' : 'ai-message');
-      
-      if (!isUser) {
-        const renderedContent = marked.parse(content);
-        messageDiv.innerHTML = renderedContent;
-        
-        messageDiv.querySelectorAll('pre code').forEach((block) => {
-          hljs.highlightElement(block);
-        });
+function addMessage(content, isUser) {
+    const messagesContainer = document.getElementById('chat-messages');
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
+    messageElement.classList.add(isUser ? 'user-message' : 'ai-message');
+    
+    if (isUser) {
+        messageElement.textContent = content;
+    } else {
+        messageElement.innerHTML = marked.parse(content);
+        hljs.highlightAll();
         
         const copyIcon = document.createElement('span');
         copyIcon.innerHTML = '📋';
         copyIcon.classList.add('copy-icon');
-        copyIcon.onclick = () => copyToClipboard(content);
-        messageDiv.appendChild(copyIcon);
+        copyIcon.title = 'Copy to clipboard';
+        copyIcon.onclick = function() {
+            navigator.clipboard.writeText(content).then(() => {
+                alert('Copied to clipboard!');
+            });
+        };
+        messageElement.appendChild(copyIcon);
         
-        messageDiv.querySelectorAll('pre').forEach((pre) => {
-          const codeCopyIcon = document.createElement('span');
-          codeCopyIcon.innerHTML = '📋';
-          codeCopyIcon.classList.add('copy-icon');
-          codeCopyIcon.onclick = () => copyToClipboard(pre.textContent);
-          pre.appendChild(codeCopyIcon);
+        messageElement.querySelectorAll('pre code').forEach((codeBlock) => {
+            const codeCopyIcon = document.createElement('span');
+            codeCopyIcon.innerHTML = '📋';
+            codeCopyIcon.classList.add('code-copy-icon');
+            codeCopyIcon.title = 'Copy code to clipboard';
+            codeCopyIcon.onclick = function(e) {
+                e.stopPropagation(); 
+                navigator.clipboard.writeText(codeBlock.textContent).then(() => {
+                    alert('Code copied to clipboard!');
+                });
+            };
+            codeBlock.parentNode.appendChild(codeCopyIcon);
         });
-      } else {
-        messageDiv.textContent = content;
-      }
-      
-      chatMessages.appendChild(messageDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
     }
+    
+    messagesContainer.appendChild(messageElement);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
 
-    async function sendMessage() {
-      const userMessage = userInput.value.trim();
-      if (userMessage === '') return;
+async function sendMessage() {
+    const userInput = document.getElementById('user-input');
+    const userMessage = userInput.value.trim();
+    if (userMessage === '') return;
 
-      addMessage(userMessage, true);
-      userInput.value = '';
+    addMessage(userMessage, true);
+    userInput.value = '';
 
-      messageHistory.push({ role: 'user', content: userMessage });
-      if (messageHistory.length > 30) {
-        messageHistory = messageHistory.slice(messageHistory.length - 30);
-      }
+    conversationHistory.push({ role: 'user', content: userMessage });
 
-      try {
-        const messages = [
-          { role: 'system', content: systemPrompt },
-          ...(useMemory ? messageHistory : [{ role: 'user', content: userMessage }])
-        ];
+    try {
+        let messages;
+        if (useMemory) {
+            messages = [
+                { role: 'system', content: systemPrompt },
+                ...conversationHistory.slice(-15)
+            ];
+        } else {
+            messages = [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userMessage }
+            ];
+        }
 
         const response = await axios.post(`${apiBaseUrl}/chat/completions`, {
-          model: selectedModel,
-          messages: messages,
-          max_tokens: maxTokens,
-          temperature: temperature
+            model: selectedModel,
+            messages: messages,
+            max_tokens: maxTokens,
+            temperature: temperature
         }, {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-          }
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            }
         });
 
         const aiMessage = response.data.choices[0].message.content;
         addMessage(aiMessage, false);
-
-        messageHistory.push({ role: 'assistant', content: aiMessage });
-        if (messageHistory.length > 30) {
-          messageHistory = messageHistory.slice(messageHistory.length - 30);
+        
+        if (useMemory) {
+            conversationHistory.push({ role: 'assistant', content: aiMessage });
+            if (conversationHistory.length > 15) {
+                conversationHistory = conversationHistory.slice(-15);
+            }
         }
-      } catch (error) {
+
+        autoSaveConversation();
+    } catch (error) {
         console.error('Error:', error);
         addMessage('Sorry, there was an error processing your request.', false);
-      }
     }
+}
 
-    function resetConversation() {
-      chatMessages.innerHTML = '';
-      messageHistory = [];
-      addMessage('Conversation reset. How can I assist you?', false);
+function startNewConversation() {
+    const messagesContainer = document.getElementById('chat-messages');
+    messagesContainer.innerHTML = '';
+    document.getElementById('user-input').value = '';
+    conversationHistory = [];
+    addMessage('New conversation started. How can I assist you?', false);
+    currentConversation = null;
+}
+
+function autoSaveConversation() {
+    if (currentConversation) {
+        const messages = document.getElementById('chat-messages').innerHTML;
+        savedConversations[currentConversation] = messages;
+        localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
     }
+}
 
-    userInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        sendMessage();
-      }
-    });
+function loadConversation(convoName) {
+    if (savedConversations[convoName]) {
+        document.getElementById('chat-messages').innerHTML = savedConversations[convoName];
+        currentConversation = convoName;
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const savedApiKey = localStorage.getItem('apiKey');
-      const savedApiBaseUrl = localStorage.getItem('apiBaseUrl');
-      const savedSystemPrompt = localStorage.getItem('systemPrompt');
-      const savedModel = localStorage.getItem('selectedModel');
-      const savedCustomPrompts = localStorage.getItem('customPrompts');
-      const savedSelectedPrompt = localStorage.getItem('selectedPrompt');
-      const savedUseMemory = localStorage.getItem('useMemory');
+        const messages = document.getElementById('chat-messages').querySelectorAll('.message');
+        conversationHistory = Array.from(messages).map(msg => {
+            const role = msg.classList.contains('user-message') ? 'user' : 'assistant';
+            return { role, content: msg.textContent };
+        });
+    }
+}
 
-      if (savedApiKey) document.getElementById('api-key').value = savedApiKey;
-      if (savedApiBaseUrl) document.getElementById('api-base-url').value = savedApiBaseUrl;
-      if (savedSystemPrompt) {
-        systemPrompt = savedSystemPrompt;
-        if (savedSystemPrompt !== 'You are a helpful assistant.') {
-          systemPromptSelect.value = 'custom';
-          customSystemPrompt = savedSystemPrompt;
+function toggleSavePrompt() {
+    const promptContent = document.getElementById('system-prompt').value.trim();
+    if (promptContent) {
+        const promptName = prompt("Enter a name for this prompt:", "");
+        if (promptName) {
+            savePrompt(promptName, promptContent);
         }
-      }
-      if (savedModel) document.getElementById('model-select').value = savedModel;
-      if (savedCustomPrompts) {
-        customPrompts = JSON.parse(savedCustomPrompts);
+    } else {
+        alert('Please enter content for the prompt before saving.');
+    }
+}
+
+function savePrompt(promptName, promptContent) {
+    if (promptName && promptContent) {
+        savedPrompts[promptName] = promptContent;
         updatePromptSelector();
-      }
+        alert('Prompt saved successfully!');
+    } else {
+        alert('Please enter both a name and content for the prompt.');
+    }
+}
 
-      if (savedSelectedPrompt) {
-        systemPromptSelect.value = savedSelectedPrompt;
-        updateSystemPrompt();
-      }
+function updatePromptSelector() {
+    const promptSelector = document.getElementById('prompt-selector');
+    const deleteButton = document.getElementById('delete-prompt');
+    promptSelector.innerHTML = '<option value="">Select a prompt</option>';
+    for (const [name, content] of Object.entries(savedPrompts)) {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        promptSelector.appendChild(option);
+    }
+    promptSelector.value = "";
+    loadSelectedPrompt();
+}
 
-      if (savedUseMemory !== null) {
-        useMemory = savedUseMemory === 'true';
-        document.getElementById('memory-toggle').checked = useMemory;
-      }
+function loadSelectedPrompt() {
+    const promptSelector = document.getElementById('prompt-selector');
+    const systemPromptInput = document.getElementById('system-prompt');
+    const deleteButton = document.getElementById('delete-prompt');
+    const selectedPrompt = promptSelector.value;
 
-      apiKey = savedApiKey || '';
-      apiBaseUrl = savedApiBaseUrl || 'https://api.openai.com/v1';
-      selectedModel = savedModel || 'gpt-4o-mini';
+    if (selectedPrompt && savedPrompts[selectedPrompt]) {
+        systemPromptInput.value = savedPrompts[selectedPrompt];
+        deleteButton.style.display = 'block';
+    } else {
+        systemPromptInput.value = '';
+        deleteButton.style.display = 'none';
+    }
+}
 
-      addMessage('Welcome! How can I assist you today?', false);
+function deletePrompt() {
+    const promptSelector = document.getElementById('prompt-selector');
+    const selectedPrompt = promptSelector.value;
+    if (selectedPrompt && savedPrompts[selectedPrompt]) {
+        if (confirm(`Are you sure you want to delete the prompt "${selectedPrompt}"?`)) {
+            delete savedPrompts[selectedPrompt];
+            updatePromptSelector();
+            document.getElementById('system-prompt').value = '';
+            localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
+            alert('Prompt deleted successfully!');
+        }
+    }
+}
 
-      settingsModal.style.display = 'none';
-    });
-  </script>
-</body>
-</html>
+function saveConversation() {
+    const convoName = prompt("Enter a name for this conversation:", "");
+    if (convoName) {
+        const messages = document.getElementById('chat-messages').innerHTML;
+        savedConversations[convoName] = messages;
+        updateConvoSelector();
+        localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
+        alert('Conversation saved successfully!');
+    }
+}
+
+function updateConvoSelector() {
+    const convoSelector = document.getElementById('convo-selector');
+    const deleteButton = document.getElementById('delete-convo');
+    convoSelector.innerHTML = '<option value="">Select a conversation</option>';
+    for (const name of Object.keys(savedConversations)) {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        convoSelector.appendChild(option);
+    }
+    convoSelector.value = "";
+    deleteButton.style.display = 'none';
+}
+
+function deleteConversation() {
+    const convoSelector = document.getElementById('convo-selector');
+    const selectedConvo = convoSelector.value;
+    if (selectedConvo && savedConversations[selectedConvo]) {
+        if (confirm(`Are you sure you want to delete the conversation "${selectedConvo}"?`)) {
+            delete savedConversations[selectedConvo];
+            updateConvoSelector();
+            localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
+            alert('Conversation deleted successfully!');
+        }
+    }
+}
+
+// Add event listeners
+document.getElementById('convo-selector').addEventListener('change', function(e) {
+    const selectedConvo = e.target.value;
+    const deleteButton = document.getElementById('delete-convo');
+    if (selectedConvo && savedConversations[selectedConvo]) {
+        loadConversation(selectedConvo);
+        deleteButton.style.display = 'block';
+    } else {
+        deleteButton.style.display = 'none';
+    }
+});
+
+document.getElementById('prompt-selector').addEventListener('change', loadSelectedPrompt);
+document.getElementById('delete-prompt').addEventListener('click', deletePrompt);
+document.getElementById('delete-convo').addEventListener('click', deleteConversation);
+
+document.getElementById('user-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+
+// Load saved settings on page load
+window.addEventListener('load', () => {
+    const savedApiKey = localStorage.getItem('apiKey');
+    const savedApiBaseUrl = localStorage.getItem('apiBaseUrl');
+    const savedSystemPrompt = localStorage.getItem('systemPrompt');
+    const savedModel = localStorage.getItem('selectedModel');
+    const savedMemory = localStorage.getItem('useMemory');
+    const savedPromptsJSON = localStorage.getItem('savedPrompts');
+    const savedConversationsJSON = localStorage.getItem('savedConversations');
+
+    if (savedApiKey) document.getElementById('api-key').value = savedApiKey;
+    if (savedApiBaseUrl) document.getElementById('api-base-url').value = savedApiBaseUrl;
+    if (savedSystemPrompt) document.getElementById('system-prompt').value = savedSystemPrompt;
+    if (savedModel) document.getElementById('model-selector').value = savedModel;
+    if (savedMemory !== null) document.getElementById('memory-switch').checked = JSON.parse(savedMemory);
+    if (savedPromptsJSON) {
+        savedPrompts = JSON.parse(savedPromptsJSON);
+        updatePromptSelector();
+    }
+    if (savedConversationsJSON) {
+        savedConversations = JSON.parse(savedConversationsJSON);
+        updateConvoSelector();
+    }
+
+    addMessage('# Welcome to the AI Chat Interface! \n\nHow can I assist you today? Feel free to ask me anything, and I\'ll do my best to help.\n\n**Here are some things I can do:**\n\n- Answer questions on various topics\n- Help with problem-solving\n- Provide explanations and examples\n- Assist with writing and editing\n- Offer creative ideas and suggestions\n\nJust type your message in the input box below and hit send!', false);
+});
+</script>
+</body></html>

@@ -267,6 +267,9 @@ label {
         <option value="llama3-70b-8192">llama3-70b-8192</option>
         <option value="llama3-8b-8192">llama3-8b-8192</option>
         <option value="gemma-7b-it">gemma-7b-it</option>
+        <option value="llama-3.2-3b-preview">llama-3.2-3b-preview</option>
+        <option value="llama-3.2-90b-text-preview">llama-3.2-90b-text-preview</option>
+        <option value="google/gemma-2-9b-it:free">google/gemma-2-9b-it:free</option>
     </select>
     <div class="memory-toggle">
         <label for="memory-switch">Memory:</label>
@@ -371,7 +374,7 @@ function addMessage(content, isUser) {
     messageElement.classList.add(isUser ? 'user-message' : 'ai-message');
     
     if (isUser) {
-        messageElement.textContent = content;
+        messageElement.innerHTML = marked.parse(content);
     } else {
         messageElement.innerHTML = marked.parse(content);
         hljs.highlightAll();

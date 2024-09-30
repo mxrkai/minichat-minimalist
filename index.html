@@ -1,4 +1,4 @@
-<html><head><base href="https://haakohu.github.io/websim/"><title>AI Chat Interface</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css"><style>
+<html><head><base href="https://mbot2.vercel.app"><title>AI Chat Interface</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css"><style>
 body, html {
     height: 100%;
     margin: 0;
@@ -220,6 +220,61 @@ label {
 .code-copy-icon:hover {
     opacity: 1;
 }
+.memory-manager {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    z-index: 1001;
+}
+.memory-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.memory-title {
+    font-size: 24px;
+    font-weight: bold;
+}
+.close-memory {
+    font-size: 24px;
+    cursor: pointer;
+}
+#new-memory {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+#memory-list {
+    margin-top: 20px;
+}
+.memory-item {
+    background-color: #f0f0f0;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.memory-item button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
 </style>
 </head>
 <body>
@@ -235,6 +290,7 @@ label {
     <div class="icon settings-icon" onclick="toggleSettings()" title="Settings">⚙️</div>
     <div class="icon new-chat-icon" onclick="startNewConversation()" title="New Conversation">+</div>
     <div class="icon save-convo-icon" onclick="saveConversation()" title="Save Conversation">🏷️</div>
+    <div class="icon memory-icon" onclick="toggleMemoryManager()" title="Manage Memories">💡</div>
 </div>
 
 <div class="settings-panel" id="settings-panel">
@@ -283,6 +339,16 @@ label {
     <button onclick="saveSettings()">Save Settings</button>
 </div>
 
+<div class="memory-manager" id="memory-manager">
+    <div class="memory-header">
+        <div class="memory-title">Memory Manager</div>
+        <div class="close-memory" onclick="toggleMemoryManager()">×</div>
+    </div>
+    <textarea id="new-memory" placeholder="Enter a new memory" rows="4"></textarea>
+    <button onclick="addMemory()">Add Memory</button>
+    <div id="memory-list"></div>
+</div>
+
 <script>
 let apiKey = '';
 let apiBaseUrl = 'https://api.openai.com/v1';
@@ -290,6 +356,7 @@ let systemPrompt = 'You are a helpful assistant.';
 let selectedModel = 'gpt-4o-mini';
 let savedPrompts = {};
 let savedConversations = {};
+let savedMemories = [];
 let currentConversation = null;
 let conversationHistory = [];
 let useMemory = false;
@@ -424,6 +491,7 @@ async function sendMessage() {
         if (useMemory) {
             messages = [
                 { role: 'system', content: systemPrompt },
+                ...savedMemories.map(memory => ({ role: 'system', content: memory })),
                 ...conversationHistory.slice(-15)
             ];
         } else {
@@ -596,29 +664,59 @@ function deleteConversation() {
     }
 }
 
-// Add event listeners
-document.getElementById('convo-selector').addEventListener('change', function(e) {
-    const selectedConvo = e.target.value;
-    const deleteButton = document.getElementById('delete-convo');
-    if (selectedConvo && savedConversations[selectedConvo]) {
-        loadConversation(selectedConvo);
-        deleteButton.style.display = 'block';
+function toggleMemoryManager() {
+    const memoryManager = document.getElementById('memory-manager');
+    if (memoryManager.style.display === 'none' || memoryManager.style.display === '') {
+        memoryManager.style.display = 'block';
+        loadMemories();
     } else {
-        deleteButton.style.display = 'none';
+        memoryManager.style.display = 'none';
     }
-});
+}
 
-document.getElementById('prompt-selector').addEventListener('change', loadSelectedPrompt);
-document.getElementById('delete-prompt').addEventListener('click', deletePrompt);
-document.getElementById('delete-convo').addEventListener('click', deleteConversation);
-
-document.getElementById('user-input').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        sendMessage();
+function addMemory() {
+    const newMemoryInput = document.getElementById('new-memory');
+    const memory = newMemoryInput.value.trim();
+    if (memory) {
+        savedMemories.push(memory);
+        saveMemoriesToLocalStorage();
+        newMemoryInput.value = '';
+        loadMemories();
     }
-});
+}
 
-// Load saved settings on page load
+function deleteMemory(index) {
+    savedMemories.splice(index, 1);
+    saveMemoriesToLocalStorage();
+    loadMemories();
+}
+
+function loadMemories() {
+    const memoryList = document.getElementById('memory-list');
+    memoryList.innerHTML = '';
+    savedMemories.forEach((memory, index) => {
+        const memoryItem = document.createElement('div');
+        memoryItem.classList.add('memory-item');
+        memoryItem.innerHTML = `
+            <span>${memory}</span>
+            <button onclick="deleteMemory(${index})">Delete</button>
+        `;
+        memoryList.appendChild(memoryItem);
+    });
+}
+
+function saveMemoriesToLocalStorage() {
+    localStorage.setItem('savedMemories', JSON.stringify(savedMemories));
+}
+
+function loadMemoriesFromLocalStorage() {
+    const savedMemoriesJSON = localStorage.getItem('savedMemories');
+    if (savedMemoriesJSON) {
+        savedMemories = JSON.parse(savedMemoriesJSON);
+    }
+}
+
+// Load memories from local storage on page load
 window.addEventListener('load', () => {
     loadLatestSettings();
     const savedConversationsJSON = localStorage.getItem('savedConversations');
@@ -626,7 +724,7 @@ window.addEventListener('load', () => {
         savedConversations = JSON.parse(savedConversationsJSON);
         updateConvoSelector();
     }
-
+    loadMemoriesFromLocalStorage();
     addMessage('Hello, how can I assist you?', false);
 });
 </script>

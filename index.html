@@ -487,6 +487,11 @@ function loadLatestSettings() {
     }
 }
 
+document.getElementById('memory-switch').addEventListener('change', function() {
+    useMemory = this.checked;
+    updateMemoryUI(useMemory);
+});
+
 function addMessage(content, isUser, modelName = '') {
     const messagesContainer = document.getElementById('chat-messages');
     const messageElement = document.createElement('div');
@@ -770,6 +775,10 @@ function toggleMemoryManager() {
 }
 
 function addMemory() {
+    if (!useMemory) {
+        alert("Please enable the memory feature to add new memories.");
+        return;
+    }
     const newMemoryInput = document.getElementById('new-memory');
     const memory = newMemoryInput.value.trim();
     if (memory) {

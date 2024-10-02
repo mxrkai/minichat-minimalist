@@ -37,6 +37,18 @@ body, html {
     background-color: #fff;
     align-self: flex-start;
     margin-right: auto;
+    position: relative;
+}
+.copy-icon {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.3s;
+}
+.copy-icon:hover {
+    opacity: 1;
 }
 .input-area {
     display: flex;
@@ -476,16 +488,16 @@ function addMessage(content, isUser, modelName = '') {
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
     messageElement.classList.add(isUser ? 'user-message' : 'ai-message');
-    
-    const labelElement = document.createElement('div');
-    labelElement.classList.add('message-label');
-    labelElement.textContent = isUser ? 'User' : modelName;
-    messageElement.appendChild(labelElement);
-    
+
     if (isUser) {
         messageElement.innerHTML += marked.parse(content);
     } else {
         messageElement.innerHTML += marked.parse(content);
+        const copyIcon = document.createElement('svg');
+        copyIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="copy-icon" viewBox="0 0 16 16"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2z"/></svg>';
+        copyIcon.classList.add('copy-icon');
+        copyIcon.addEventListener('click', () => copyToClipboard(content));
+        messageElement.appendChild(copyIcon);
         hljs.highlightAll();
     }
     
@@ -772,6 +784,14 @@ function loadMemoriesFromLocalStorage() {
     if (savedMemoriesJSON) {
         savedMemories = JSON.parse(savedMemoriesJSON);
     }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Content copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
 }
 
 // Load memories from local storage on page load

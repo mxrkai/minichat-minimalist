@@ -20,11 +20,13 @@ body, html {
     background-color: #e6ebee;
 }
 .message {
-    max-width: 80%;
-    padding: 8px 12px;
-    margin-bottom: 10px;
-    border-radius: 8px;
+    max-width: 90%; /* Increased from 80% */
+    padding: 12px 16px; /* Increased padding */
+    margin-bottom: 15px; /* Increased margin between messages */
+    border-radius: 12px; /* Slightly increased border radius */
     word-wrap: break-word;
+    width: fit-content; /* Allow the bubble to expand based on content */
+    min-width: 60%; /* Set a minimum width to ensure expansion */
 }
 .user-message {
     background-color: #effdde;

@@ -1,4 +1,4 @@
-<html><head><base href="https://mbot2.vercel.app"><title>AI Chat Interface</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css"><style>
+<html><head><base href="https://mbot2.vercel.app/"><title>Minichat AI</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css"><style>
 body, html {
     height: 100%;
     margin: 0;
@@ -9,62 +9,70 @@ body, html {
     display: flex;
     flex-direction: column;
     height: 100%;
-    max-width: 600px;
+    max-width: 100%;
     margin: 0 auto;
-    background-color: white;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    background-color: #fff;
 }
 .chat-messages {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
+    background-color: #e6ebee;
 }
 .message {
-    margin-bottom: 15px;
-    padding: 15px 20px;
-    border-radius: 18px;
-    max-width: 90%;
-    position: relative;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    max-width: 80%;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    word-wrap: break-word;
 }
 .user-message {
-    background-color: #e6f3e6;
-    color: #333;
+    background-color: #effdde;
     align-self: flex-end;
     margin-left: auto;
-    border-bottom-right-radius: 4px;
 }
 .ai-message {
-    background-color: #e6f2ff; /* Changed to a very light shade of blue */
-    color: #333;
+    background-color: #fff;
     align-self: flex-start;
     margin-right: auto;
-    border-bottom-left-radius: 4px;
 }
 .input-area {
     display: flex;
     padding: 10px;
-    border-top: 1px solid #ccc;
+    background-color: #fff;
+    border-top: 1px solid #e0e0e0;
 }
 #user-input {
     flex: 1;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid #e0e0e0;
     border-radius: 20px;
     margin-right: 10px;
 }
-button {
-    background-color: #007bff;
+.input-area button {
+    background-color: #5682a3;
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 20px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
     cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-#delete-prompt {
-    margin-top: 0;
-    margin-bottom: 20px;
-    background-color: #dc3545;
+.input-area button svg {
+    width: 24px;
+    height: 24px;
+}
+@media (min-width: 768px) {
+    .chat-container {
+        max-width: 768px;
+        height: 100vh;
+        margin: 0 auto;
+        border-radius: 0;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
 }
 .icon-container {
     position: fixed;
@@ -194,13 +202,24 @@ label {
     margin-bottom: 5px;
     font-weight: bold;
 }
+.memory-controls {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+.memory-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
 .memory-toggle {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
 }
 .memory-toggle label {
     margin-right: 10px;
+    margin-bottom: 0;
 }
 #memory-switch {
     width: auto;
@@ -275,81 +294,97 @@ label {
     border-radius: 5px;
     cursor: pointer;
 }
-</style>
-</head>
-<body>
-<div class="chat-container">
-    <div class="chat-messages" id="chat-messages"></div>
-    <div class="input-area">
-        <input type="text" id="user-input" placeholder="Type your message...">
-        <button onclick="sendMessage()">Send</button>
+.message-label {
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-bottom: 5px;
+    opacity: 0.7;
+}
+.user-message .message-label {
+    text-align: right;
+}
+.ai-message .message-label {
+    text-align: left;
+}
+</style></head><body>
+    <div class="chat-container">
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type your message..." onkeydown="handleKeyDown(event)">
+            <button onclick="sendMessage()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z" fill="currentColor"/></svg>
+            </button>
+        </div>
     </div>
-</div>
 
-<div class="icon-container">
-    <div class="icon settings-icon" onclick="toggleSettings()" title="Settings">⚙️</div>
-    <div class="icon new-chat-icon" onclick="startNewConversation()" title="New Conversation">+</div>
-    <div class="icon save-convo-icon" onclick="saveConversation()" title="Save Conversation">🏷️</div>
-    <div class="icon memory-icon" onclick="toggleMemoryManager()" title="Manage Memories">💡</div>
-</div>
+    <div class="icon-container">
+        <div class="icon settings-icon" onclick="toggleSettings()" title="Settings">⚙️</div>
+        <div class="icon new-chat-icon" onclick="startNewConversation()" title="New Conversation">+</div>
+        <div class="icon save-convo-icon" onclick="saveConversation()" title="Save Conversation">🏷️</div>
+        <div class="icon memory-icon" onclick="toggleMemoryManager()" title="Manage Memories">💡</div>
+    </div>
 
-<div class="settings-panel" id="settings-panel">
-    <div class="settings-header">
-        <div class="settings-title">Settings</div>
-        <div class="close-settings" onclick="toggleSettings()">×</div>
+    <div class="settings-panel" id="settings-panel">
+        <div class="settings-header">
+            <div class="settings-title">Settings</div>
+            <div class="close-settings" onclick="toggleSettings()">×</div>
+        </div>
+        <input type="text" id="api-key" placeholder="API Key">
+        <input type="text" id="api-base-url" placeholder="API Base URL">
+        <div class="system-prompt-container">
+            <textarea id="system-prompt" placeholder="System Prompt" rows="4"></textarea>
+            <span class="save-prompt-icon" onclick="toggleSavePrompt()" title="Save Prompt">💾</span>
+        </div>
+        <label for="prompt-selector">Prompt Selector:</label>
+        <select id="prompt-selector">
+            <option value="">Select a prompt</option>
+        </select>
+        <button id="delete-prompt" style="display: none;" onclick="deletePrompt()">Delete Prompt</button>
+        <label for="model-selector">Models:</label>
+        <select id="model-selector">
+            <option value="gpt-4o-mini">gpt-4o-mini</option>
+            <option value="gpt-4o">gpt-4o</option>
+            <option value="gemma2-9b-it">gemma2-9b-it</option>
+            <option value="llama3-groq-70b-8192-tool-use-preview">llama3-groq-70b-8192-tool-use-preview</option>
+            <option value="mixtral-8x7b-32768">mixtral-8x7b-32768</option>
+            <option value="llama-3.1-405b-reasoning">llama-3.1-405b-reasoning</option>
+            <option value="llama-3.1-70b-versatile">llama-3.1-70b-versatile</option>
+            <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
+            <option value="llama3-groq-8b-8192-tool-use-preview">llama3-groq-8b-8192</option>
+            <option value="llama3-70b-8192">llama3-70b-8192</option>
+            <option value="llama3-8b-8192">llama3-8b-8192</option>
+            <option value="gemma-7b-it">gemma-7b-it</option>
+            <option value="llama-3.2-3b-preview">llama-3.2-3b-preview</option>
+            <option value="llama-3.2-90b-text-preview">llama-3.2-90b-text-preview</option>
+            <option value="google/gemma-2-9b-it:free">google/gemma-2-9b-it:free</option>
+        </select>
+        <label for="convo-selector">Conversation Selector:</label>
+        <select id="convo-selector">
+            <option value="">Select a conversation</option>
+        </select>
+        <button id="delete-convo" style="display: none;" onclick="deleteConversation()">Delete Conversation</button>
+        <button onclick="saveSettings()">Save Settings</button>
     </div>
-    <input type="text" id="api-key" placeholder="API Key">
-    <input type="text" id="api-base-url" placeholder="API Base URL">
-    <div class="system-prompt-container">
-        <textarea id="system-prompt" placeholder="System Prompt" rows="4"></textarea>
-        <span class="save-prompt-icon" onclick="toggleSavePrompt()" title="Save Prompt">💾</span>
-    </div>
-    <label for="prompt-selector">Prompt Selector:</label>
-    <select id="prompt-selector">
-        <option value="">Select a prompt</option>
-    </select>
-    <button id="delete-prompt" style="display: none;">Delete Prompt</button>
-    <label for="model-selector">Models:</label>
-    <select id="model-selector">
-        <option value="gpt-4o-mini">gpt-4o-mini</option>
-        <option value="gpt-4o">gpt-4o</option>
-        <option value="gemma2-9b-it">gemma2-9b-it</option>
-        <option value="llama3-groq-70b-8192-tool-use-preview">llama3-groq-70b-8192-tool-use-preview</option>
-        <option value="mixtral-8x7b-32768">mixtral-8x7b-32768</option>
-        <option value="llama-3.1-405b-reasoning">llama-3.1-405b-reasoning</option>
-        <option value="llama-3.1-70b-versatile">llama-3.1-70b-versatile</option>
-        <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
-        <option value="llama3-groq-8b-8192-tool-use-preview">llama3-groq-8b-8192-tool-use-preview</option>
-        <option value="llama3-70b-8192">llama3-70b-8192</option>
-        <option value="llama3-8b-8192">llama3-8b-8192</option>
-        <option value="gemma-7b-it">gemma-7b-it</option>
-        <option value="llama-3.2-3b-preview">llama-3.2-3b-preview</option>
-        <option value="llama-3.2-90b-text-preview">llama-3.2-90b-text-preview</option>
-        <option value="google/gemma-2-9b-it:free">google/gemma-2-9b-it:free</option>
-    </select>
-    <div class="memory-toggle">
-        <label for="memory-switch">Memory:</label>
-        <input type="checkbox" id="memory-switch">
-    </div>
-    <label for="convo-selector">Conversation Selector:</label>
-    <select id="convo-selector">
-        <option value="">Select a conversation</option>
-    </select>
-    <button id="delete-convo" style="display: none;">Delete Conversation</button>
-    <button onclick="saveSettings()">Save Settings</button>
-</div>
 
-<div class="memory-manager" id="memory-manager">
-    <div class="memory-header">
-        <div class="memory-title">Memory Manager</div>
-        <div class="close-memory" onclick="toggleMemoryManager()">×</div>
+    <div class="memory-manager" id="memory-manager">
+        <div class="memory-header">
+            <div class="memory-title">Memory Manager</div>
+            <div class="close-memory" onclick="toggleMemoryManager()">×</div>
+        </div>
+        <div class="memory-controls">
+            <textarea id="new-memory" placeholder="Enter a new memory" rows="4"></textarea>
+            <div class="memory-actions">
+                <button onclick="addMemory()">Add Memory</button>
+                <div class="memory-toggle">
+                    <label for="memory-switch">Use Memory:</label>
+                    <input type="checkbox" id="memory-switch">
+                </div>
+            </div>
+        </div>
+        <div id="memory-list"></div>
     </div>
-    <textarea id="new-memory" placeholder="Enter a new memory" rows="4"></textarea>
-    <button onclick="addMemory()">Add Memory</button>
-    <div id="memory-list"></div>
-</div>
 
-<script>
+    <script>
 let apiKey = '';
 let apiBaseUrl = 'https://api.openai.com/v1';
 let systemPrompt = 'You are a helpful assistant.';
@@ -396,6 +431,7 @@ function saveSettings() {
     systemPrompt = document.getElementById('system-prompt').value;
     selectedModel = document.getElementById('model-selector').value;
     useMemory = document.getElementById('memory-switch').checked;
+    updateMemoryUI(useMemory);
 
     const settings = {
         apiKey,
@@ -410,6 +446,17 @@ function saveSettings() {
     localStorage.setItem('latestSettings', JSON.stringify(settings));
 
     toggleSettings();
+}
+
+function updateMemoryUI(isEnabled) {
+    const newMemoryInput = document.getElementById('new-memory');
+    const addMemoryButton = document.querySelector('.memory-actions button');
+    const memoryList = document.getElementById('memory-list');
+
+    newMemoryInput.disabled = !isEnabled;
+    addMemoryButton.disabled = !isEnabled;
+    memoryList.style.opacity = isEnabled ? '1' : '0.5';
+    memoryList.style.pointerEvents = isEnabled ? 'auto' : 'none';
 }
 
 function loadLatestSettings() {
@@ -432,18 +479,29 @@ function loadLatestSettings() {
 
         updatePromptSelector();
     }
+
+    const savedConversationsJSON = localStorage.getItem('savedConversations');
+    if (savedConversationsJSON) {
+        savedConversations = JSON.parse(savedConversationsJSON);
+        updateConvoSelector();
+    }
 }
 
-function addMessage(content, isUser) {
+function addMessage(content, isUser, modelName = '') {
     const messagesContainer = document.getElementById('chat-messages');
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
     messageElement.classList.add(isUser ? 'user-message' : 'ai-message');
     
+    const labelElement = document.createElement('div');
+    labelElement.classList.add('message-label');
+    labelElement.textContent = isUser ? 'User' : modelName;
+    messageElement.appendChild(labelElement);
+    
     if (isUser) {
-        messageElement.innerHTML = marked.parse(content);
+        messageElement.innerHTML += marked.parse(content);
     } else {
-        messageElement.innerHTML = marked.parse(content);
+        messageElement.innerHTML += marked.parse(content);
         hljs.highlightAll();
         
         const copyIcon = document.createElement('span');
@@ -481,6 +539,20 @@ async function sendMessage() {
     const userMessage = userInput.value.trim();
     if (userMessage === '') return;
 
+    if (userMessage.startsWith('#save ')) {
+        const newMemory = userMessage.slice(6).trim();
+        if (newMemory) {
+            savedMemories.push(newMemory);
+            saveMemoriesToLocalStorage();
+            loadMemories();
+            addMessage(`Memory saved: ${newMemory}`, false, selectedModel);
+        } else {
+            addMessage("Error: No memory content provided after #save", false, selectedModel);
+        }
+        userInput.value = '';
+        return;
+    }
+
     addMessage(userMessage, true);
     userInput.value = '';
 
@@ -488,16 +560,20 @@ async function sendMessage() {
 
     try {
         let messages;
-        if (useMemory) {
+        if (useMemory && savedMemories.length > 0) {
+            const systemMessages = systemPrompt.trim() !== '' 
+                ? [{ role: 'system', content: systemPrompt }]
+                : [];
+            
             messages = [
-                { role: 'system', content: systemPrompt },
+                ...systemMessages,
                 ...savedMemories.map(memory => ({ role: 'system', content: memory })),
-                ...conversationHistory.slice(-15)
+                ...conversationHistory
             ];
         } else {
             messages = [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userMessage }
+                { role: 'system', content: systemPrompt || 'You are a helpful assistant.' },
+                ...conversationHistory
             ];
         }
 
@@ -514,20 +590,22 @@ async function sendMessage() {
         });
 
         const aiMessage = response.data.choices[0].message.content;
-        addMessage(aiMessage, false);
+        addMessage(aiMessage, false, selectedModel);
         
-        if (useMemory) {
-            conversationHistory.push({ role: 'assistant', content: aiMessage });
-            if (conversationHistory.length > 15) {
-                conversationHistory = conversationHistory.slice(-15);
-            }
-        }
+        conversationHistory.push({ role: 'assistant', content: aiMessage });
 
         autoSaveConversation();
     } catch (error) {
         console.error('Error:', error);
         const errorMessage = handleError(error);
-        addMessage(errorMessage, false);
+        addMessage(errorMessage, false, selectedModel);
+    }
+}
+
+function handleKeyDown(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        sendMessage();
     }
 }
 
@@ -594,7 +672,9 @@ function updatePromptSelector() {
         promptSelector.appendChild(option);
     }
     promptSelector.value = "";
-    loadSelectedPrompt();
+    deleteButton.style.display = 'none';
+
+    promptSelector.addEventListener('change', loadSelectedPrompt);
 }
 
 function loadSelectedPrompt() {
@@ -608,6 +688,35 @@ function loadSelectedPrompt() {
         deleteButton.style.display = 'block';
     } else {
         systemPromptInput.value = '';
+        deleteButton.style.display = 'none';
+    }
+}
+
+function updateConvoSelector() {
+    const convoSelector = document.getElementById('convo-selector');
+    const deleteButton = document.getElementById('delete-convo');
+    convoSelector.innerHTML = '<option value="">Select a conversation</option>';
+    for (const name of Object.keys(savedConversations)) {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        convoSelector.appendChild(option);
+    }
+    convoSelector.value = "";
+    deleteButton.style.display = 'none';
+
+    convoSelector.addEventListener('change', loadSelectedConversation);
+}
+
+function loadSelectedConversation() {
+    const convoSelector = document.getElementById('convo-selector');
+    const deleteButton = document.getElementById('delete-convo');
+    const selectedConvo = convoSelector.value;
+
+    if (selectedConvo && savedConversations[selectedConvo]) {
+        loadConversation(selectedConvo);
+        deleteButton.style.display = 'block';
+    } else {
         deleteButton.style.display = 'none';
     }
 }
@@ -635,20 +744,6 @@ function saveConversation() {
         localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
         alert('Conversation saved successfully!');
     }
-}
-
-function updateConvoSelector() {
-    const convoSelector = document.getElementById('convo-selector');
-    const deleteButton = document.getElementById('delete-convo');
-    convoSelector.innerHTML = '<option value="">Select a conversation</option>';
-    for (const name of Object.keys(savedConversations)) {
-        const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
-        convoSelector.appendChild(option);
-    }
-    convoSelector.value = "";
-    deleteButton.style.display = 'none';
 }
 
 function deleteConversation() {
@@ -716,16 +811,20 @@ function loadMemoriesFromLocalStorage() {
     }
 }
 
+// Add this to the end of the script
+document.getElementById('user-input').addEventListener('keyup', function(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        sendMessage();
+    }
+});
+
 // Load memories from local storage on page load
 window.addEventListener('load', () => {
     loadLatestSettings();
-    const savedConversationsJSON = localStorage.getItem('savedConversations');
-    if (savedConversationsJSON) {
-        savedConversations = JSON.parse(savedConversationsJSON);
-        updateConvoSelector();
-    }
     loadMemoriesFromLocalStorage();
     addMessage('Hello, how can I assist you?', false);
+    updateMemoryUI(useMemory);
 });
 </script>
 </body></html>

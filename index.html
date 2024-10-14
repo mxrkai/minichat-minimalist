@@ -282,6 +282,17 @@ input:checked + .slider:before {
     padding: 8px 16px;
     font-size: 14px;
 }
+.built-by {
+    text-align: center;
+    font-size: 12px;
+    color: #888;
+    margin-top: 10px;
+}
+@media (max-width: 768px) {
+    .built-by {
+        font-size: 10px;
+    }
+}
 .copy-icon {
     position: absolute;
     bottom: 5px;
@@ -291,6 +302,26 @@ input:checked + .slider:before {
 }
 .copy-icon:hover {
     opacity: 1;
+}
+.code-block {
+    position: relative;
+    margin-bottom: 15px;
+}
+pre, code {
+    background-color: #FFE4B5; /* Light orange color (Moccasin) */
+    padding: 10px;
+    border-radius: 5px;
+    display: block;
+}
+.code-copy-icon {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    opacity: 0.6;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 2px;
+    border-radius: 3px;
 }
 </style>
 </head>
@@ -302,16 +333,16 @@ input:checked + .slider:before {
         </div>
         <div class="settings-button">
             <div class="system-prompt" onclick="openSystemPrompt()">
-                <img src="/a/3bb31b83-da2f-4a3d-ac34-31441d4364f5" alt="Robot icon" width="24" height="24" style="margin-right: 10px; filter: invert(1);">
-                System Prompt
+                🤖 System Prompt
             </div>
             <div class="settings" onclick="openSettings()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
-                Settings
+                <span style="margin-left: 10px;">Settings</span>
             </div>
+            <div class="built-by">built by reonjy ❤️</div>
         </div>
     </div>
     <div class="main-content">
@@ -400,6 +431,26 @@ let memoryEnabled = false;
 let systemPrompt = '';
 let conversationHistory = [];
 
+function saveSettingsToLocalStorage() {
+    localStorage.setItem('apiBaseUrl', apiBaseUrl);
+    localStorage.setItem('apiKey', apiKey);
+}
+
+function loadSettingsFromLocalStorage() {
+    const savedApiBaseUrl = localStorage.getItem('apiBaseUrl');
+    const savedApiKey = localStorage.getItem('apiKey');
+    
+    if (savedApiBaseUrl) {
+        apiBaseUrl = savedApiBaseUrl;
+        apiBaseUrlInput.value = apiBaseUrl;
+    }
+    
+    if (savedApiKey) {
+        apiKey = savedApiKey;
+        apiKeyInput.value = apiKey;
+    }
+}
+
 function toggleSidebar() {
     sidebar.classList.toggle('hidden');
 }
@@ -422,6 +473,7 @@ function saveSettings() {
     if (!memoryEnabled) {
         conversationHistory = [];
     }
+    saveSettingsToLocalStorage();
     closeSettings();
 }
 
@@ -502,6 +554,20 @@ function appendMessage(message, className) {
         copyIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="copy-icon"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
         copyIcon.onclick = () => copyToClipboard(message);
         messageElement.appendChild(copyIcon);
+
+        // Add copy icons to code blocks
+        const codeBlocks = messageElement.querySelectorAll('pre code');
+        codeBlocks.forEach(codeBlock => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'code-block';
+            codeBlock.parentNode.insertBefore(wrapper, codeBlock);
+            wrapper.appendChild(codeBlock);
+
+            const codeCopyIcon = document.createElement('span');
+            codeCopyIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="code-copy-icon"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+            codeCopyIcon.onclick = () => copyToClipboard(codeBlock.textContent);
+            wrapper.appendChild(codeCopyIcon);
+        });
     } else {
         messageElement.textContent = message;
     }
@@ -532,5 +598,8 @@ window.onclick = function(event) {
         closeSystemPrompt();
     }
 }
+
+// Load settings when the page loads
+document.addEventListener('DOMContentLoaded', loadSettingsFromLocalStorage);
 </script>
 </body></html>

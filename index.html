@@ -1,4 +1,4 @@
-<html><head><base href="https://mbot2.vercel.app/"><title>OpenAI Chat - AI-powered conversations</title>
+<html><head><base href="https://www.openai-chat.com/"><title>OpenAI Chat - AI-powered conversations</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
@@ -77,7 +77,7 @@ button {
 button:hover {
     background-color: #0e906f;
 }
-.new-chat, .settings {
+.settings {
     display: flex;
     align-items: center;
     padding: 10px;
@@ -86,13 +86,23 @@ button:hover {
     cursor: pointer;
     margin-bottom: 20px;
 }
-.new-chat svg, .settings svg {
-    margin-right: 10px;
-}
 .model-selector {
     margin-bottom: 20px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+}
+.new-chat-button {
+    background: none;
+    border: none;
+    color: #10a37f;
+    cursor: pointer;
+    padding: 5px;
+    margin-left: 10px;
+}
+.new-chat-button:hover {
+    background-color: rgba(16, 163, 127, 0.1);
+    border-radius: 5px;
 }
 .settings-modal {
     display: none;
@@ -204,22 +214,27 @@ input:checked + .slider:before {
         width: 100%;
     }
     .model-selector {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
     }
     .model-selector select {
-        width: 100%;
-        margin-top: 10px;
+        flex-grow: 1;
+        margin-top: 0;
+        margin-left: 10px;
+        margin-right: 10px;
         font-size: 14px;
     }
     .input-area {
-        flex-direction: column;
+        flex-direction: row;
+        align-items: center;
     }
     .input-area input[type="text"] {
-        margin-bottom: 10px;
-        font-size: 14px;
+        margin-bottom: 0;
+        margin-right: 10px;
+        flex-grow: 1;
     }
     .input-area button {
-        width: 100%;
+        width: auto;
         margin-left: 0;
         font-size: 14px;
     }
@@ -230,7 +245,7 @@ input:checked + .slider:before {
     .message {
         font-size: 14px;
     }
-    .new-chat, .settings, .system-prompt {
+    .settings, .system-prompt {
         font-size: 14px;
     }
     .toggle-sidebar {
@@ -283,13 +298,6 @@ input:checked + .slider:before {
 <div class="container">
     <div class="sidebar" id="sidebar">
         <div class="sidebar-content">
-            <div class="new-chat" onclick="newChat()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                New chat
-            </div>
             <!-- Chat history would go here -->
         </div>
         <div class="settings-button">
@@ -319,7 +327,14 @@ input:checked + .slider:before {
                 <option value="gpt-4o">gpt-4o</option>
                 <option value="gpt-4o-mini">gpt-4o-mini</option>
                 <option value="claude-3.5-sonnet">claude-3.5-sonnet</option>
+                <option value="Creative">web search</option>
             </select>
+            <button class="new-chat-button" onclick="newChat()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
         </div>
         <div class="chat-area" id="chatArea">
             <!-- Chat messages will be inserted here -->

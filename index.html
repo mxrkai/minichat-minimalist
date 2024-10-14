@@ -1,43 +1,271 @@
-<html><head><base href="https://mbot2.vercel.app/"><title>Minichat AI</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css"><style>
+<html><head><base href="https://mbot2.vercel.app/"><title>OpenAI Chat - AI-powered conversations</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
 body, html {
-    height: 100%;
     margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100%;
+    background-color: #f7f7f8;
 }
-.chat-container {
+.container {
+    display: flex;
+    height: 100%;
+}
+.sidebar {
+    width: 260px;
+    background-color: #202123;
+    color: white;
+    padding: 20px;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    max-width: 100%;
-    margin: 0 auto;
-    background-color: #fff;
+    transition: width 0.3s ease;
 }
-.chat-messages {
-    flex: 1;
-    overflow-y: auto;
+.sidebar.hidden {
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+}
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.chat-area {
+    flex-grow: 1;
     padding: 20px;
-    background-color: #e6ebee;
+    overflow-y: auto;
+}
+.input-area {
+    padding: 20px;
+    background-color: white;
+    border-top: 1px solid #e5e5e5;
+    display: flex;
+    align-items: center;
 }
 .message {
-    max-width: 90%; /* Increased from 80% */
-    padding: 12px 16px; /* Increased padding */
-    margin-bottom: 15px; /* Increased margin between messages */
-    border-radius: 12px; /* Slightly increased border radius */
-    word-wrap: break-word;
-    width: fit-content; /* Allow the bubble to expand based on content */
-    min-width: 60%; /* Set a minimum width to ensure expansion */
+    margin-bottom: 20px;
+    padding: 10px;
+    border-radius: 5px;
 }
 .user-message {
-    background-color: #effdde;
-    align-self: flex-end;
-    margin-left: auto;
+    background-color: #f1f5f9;
 }
 .ai-message {
-    background-color: #fff;
-    align-self: flex-start;
-    margin-right: auto;
+    background-color: #e9ecef;
     position: relative;
+}
+input[type="text"], select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    font-size: 16px;
+}
+button {
+    background-color: #10a37f;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-left: 10px;
+}
+button:hover {
+    background-color: #0e906f;
+}
+.new-chat, .settings {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #343541;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+.new-chat svg, .settings svg {
+    margin-right: 10px;
+}
+.model-selector {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+.settings-modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+.settings-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 5px;
+}
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+.sidebar-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.settings-button {
+    margin-top: auto;
+}
+.toggle-sidebar {
+    background: none;
+    border: none;
+    color: #10a37f;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 10px;
+    margin-right: 10px;
+}
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: #10a37f;
+}
+input:checked + .slider:before {
+    transform: translateX(18px);
+}
+.setting-item {
+    margin-bottom: 15px;
+}
+@media (max-width: 768px) {
+    body, html {
+        font-size: 14px;
+    }
+    .container {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+    }
+    .sidebar.hidden {
+        display: none;
+    }
+    .main-content {
+        width: 100%;
+    }
+    .model-selector {
+        flex-wrap: wrap;
+    }
+    .model-selector select {
+        width: 100%;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+    .input-area {
+        flex-direction: column;
+    }
+    .input-area input[type="text"] {
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+    .input-area button {
+        width: 100%;
+        margin-left: 0;
+        font-size: 14px;
+    }
+    .settings-content {
+        width: 90%;
+        font-size: 14px;
+    }
+    .message {
+        font-size: 14px;
+    }
+    .new-chat, .settings, .system-prompt {
+        font-size: 14px;
+    }
+    .toggle-sidebar {
+        font-size: 20px;
+    }
+    #systemPromptInput {
+        font-size: 14px;
+    }
+    .settings-content button {
+        font-size: 14px;
+    }
+}
+.system-prompt {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #343541;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    border: 1px solid #4d4d4f;
+}
+#systemPromptInput {
+    width: 100%;
+    min-height: 100px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    font-size: 14px;
+    resize: vertical;
+}
+.settings-content button {
+    padding: 8px 16px;
+    font-size: 14px;
 }
 .copy-icon {
     position: absolute;
@@ -45,519 +273,190 @@ body, html {
     right: 5px;
     cursor: pointer;
     opacity: 0.6;
-    transition: opacity 0.3s;
 }
 .copy-icon:hover {
     opacity: 1;
 }
-.input-area {
-    display: flex;
-    padding: 10px;
-    background-color: #fff;
-    border-top: 1px solid #e0e0e0;
-}
-#user-input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #e0e0e0;
-    border-radius: 20px;
-    margin-right: 10px;
-}
-.input-area button {
-    background-color: #5682a3;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.input-area button svg {
-    width: 24px;
-    height: 24px;
-}
-@media (min-width: 768px) {
-    .chat-container {
-        max-width: 768px;
-        height: 100vh;
-        margin: 0 auto;
-        border-radius: 0;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-}
-.icon-container {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    z-index: 1000;
-}
-.icon {
-    font-size: 24px;
-    cursor: pointer;
-    margin-bottom: 10px;
-    background-color: white;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-.settings-panel {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: white;
-    padding: 20px;
-    box-sizing: border-box;
-    overflow-y: auto;
-    z-index: 1001;
-}
-.settings-panel input, .settings-panel select, .settings-panel textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-}
-.settings-panel button {
-    background-color: #e6f2ff; /* Light blue color */
-    color: #333; /* Darker text color for better contrast */
-    margin-top: 20px; /* Add space above the button */
-    width: 100%; /* Make the button full width */
-    padding: 10px; /* Add some padding */
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-}
-.settings-panel button:hover {
-    background-color: #cce6ff; /* Slightly darker shade on hover */
-}
-.settings-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-.settings-title {
-    font-size: 24px;
-    font-weight: bold;
-}
-.close-settings {
-    font-size: 24px;
-    cursor: pointer;
-}
-.overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    z-index: 999;
-}
-.ai-message pre {
-    background-color: #f4f4f4;
-    padding: 10px;
-    border-radius: 5px;
-    overflow-x: auto;
-    position: relative;
-}
-.ai-message code {
-    font-family: 'Courier New', Courier, monospace;
-}
-.system-prompt-container {
-    position: relative;
-}
-.save-prompt-icon {
-    position: absolute;
-    bottom: 25px;
-    right: 10px;
-    cursor: pointer;
-    font-size: 20px;
-    opacity: 0.7;
-}
-.save-prompt-icon:hover {
-    opacity: 1;
-}
-.save-convo-icon {
-    margin-top: 10px;
-}
-#convo-selector {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-}
-#delete-convo {
-    background-color: #ffcccc; /* Light red color */
-    color: #333; /* Darker text color for better contrast */
-    margin-top: 10px; /* Add space above the button */
-    margin-bottom: 20px; /* Add space below the button */
-    width: 100%; /* Make the button full width */
-    padding: 10px; /* Add some padding */
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-#delete-convo:hover {
-    background-color: #ff9999; /* Slightly darker shade on hover */
-}
-label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-.memory-controls {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
-}
-.memory-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-}
-.memory-toggle {
-    display: flex;
-    align-items: center;
-}
-.memory-toggle label {
-    margin-right: 10px;
-    margin-bottom: 0;
-}
-#memory-switch {
-    width: auto;
-    margin-bottom: 0;
-}
-.memory-manager {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: white;
-    padding: 20px;
-    box-sizing: border-box;
-    overflow-y: auto;
-    z-index: 1001;
-}
-.memory-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-.memory-title {
-    font-size: 24px;
-    font-weight: bold;
-}
-.close-memory {
-    font-size: 24px;
-    cursor: pointer;
-}
-.memory-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-.memory-item button {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-#delete-prompt {
-    background-color: #ffcccc; /* Light red color */
-    color: #333; /* Darker text color for better contrast */
-    margin-top: 10px; /* Add space above the button */
-    margin-bottom: 20px; /* Add space below the button */
-    width: 100%; /* Make the button full width */
-    padding: 10px; /* Add some padding */
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-#delete-prompt:hover {
-    background-color: #ff9999; /* Slightly darker shade on hover */
-}
-</style></head><body>
-    <div class="chat-container">
-        <div class="chat-messages" id="chat-messages"></div>
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="Type your message..." onkeydown="handleKeyDown(event)">
-            <button onclick="sendMessage()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z" fill="currentColor"/></svg>
-            </button>
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <div class="new-chat" onclick="newChat()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New chat
+            </div>
+            <!-- Chat history would go here -->
         </div>
-    </div>
-
-    <div class="icon-container">
-        <div class="icon settings-icon" onclick="toggleSettings()" title="Settings">⚙️</div>
-        <div class="icon new-chat-icon" onclick="startNewConversation()" title="New Conversation">+</div>
-        <div class="icon save-convo-icon" onclick="saveConversation()" title="Save Conversation">🏷️</div>
-        <div class="icon memory-icon" onclick="toggleMemoryManager()" title="Manage Memories">💡</div>
-    </div>
-
-    <div class="settings-panel" id="settings-panel">
-        <div class="settings-header">
-            <div class="settings-title">Settings</div>
-            <div class="close-settings" onclick="toggleSettings()">×</div>
-        </div>
-        <input type="text" id="api-key" placeholder="API Key">
-        <input type="text" id="api-base-url" placeholder="API Base URL">
-        <div class="system-prompt-container">
-            <textarea id="system-prompt" placeholder="System Prompt" rows="4"></textarea>
-            <span class="save-prompt-icon" onclick="toggleSavePrompt()" title="Save Prompt">💾</span>
-        </div>
-        <label for="prompt-selector">Prompt Selector:</label>
-        <select id="prompt-selector">
-            <option value="">Select a prompt</option>
-        </select>
-        <button id="delete-prompt" style="display: none;" onclick="deletePrompt()">Delete Prompt</button>
-        <label for="model-selector">Models:</label>
-        <select id="model-selector">
-            <option value="gpt-4o-mini">gpt-4o-mini</option>
-            <option value="gpt-4o">gpt-4o</option>
-            <option value="gemma2-9b-it">gemma2-9b-it</option>
-            <option value="llama3-groq-70b-8192-tool-use-preview">llama3-groq-70b-8192-tool-use-preview</option>
-            <option value="mixtral-8x7b-32768">mixtral-8x7b-32768</option>
-            <option value="llama-3.1-405b-reasoning">llama-3.1-405b-reasoning</option>
-            <option value="llama-3.1-70b-versatile">llama-3.1-70b-versatile</option>
-            <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
-            <option value="llama3-groq-8b-8192-tool-use-preview">llama3-groq-8192</option>
-            <option value="llama3-70b-8192">llama3-70b-8192</option>
-            <option value="llama3-8b-8192">llama3-8b-8192</option>
-            <option value="gemma-7b-it">gemma-7b-it</option>
-            <option value="llama-3.2-3b-preview">llama-3.2-3b-preview</option>
-            <option value="llama-3.2-90b-text-preview">llama-3.2-90b-text-preview</option>
-            <option value="google/gemma-2-9b-it:free">google/gemma-2-9b-it:free</option>
-        </select>
-        <label for="convo-selector">Conversation Selector:</label>
-        <select id="convo-selector">
-            <option value="">Select a conversation</option>
-        </select>
-        <button id="delete-convo" style="display: none;" onclick="deleteConversation()">Delete Conversation</button>
-        <button onclick="saveSettings()">Save Settings</button>
-    </div>
-
-    <div class="memory-manager" id="memory-manager">
-        <div class="memory-header">
-            <div class="memory-title">Memory Manager</div>
-            <div class="close-memory" onclick="toggleMemoryManager()">×</div>
-        </div>
-        <div class="memory-controls">
-            <textarea id="new-memory" placeholder="Enter a new memory" rows="4"></textarea>
-            <div class="memory-actions">
-                <button onclick="addMemory()">Add Memory</button>
-                <div class="memory-toggle">
-                    <label for="memory-switch">Use Memory:</label>
-                    <input type="checkbox" id="memory-switch">
-                </div>
+        <div class="settings-button">
+            <div class="system-prompt" onclick="openSystemPrompt()">
+                <img src="/a/3bb31b83-da2f-4a3d-ac34-31441d4364f5" alt="Robot icon" width="24" height="24" style="margin-right: 10px; filter: invert(1);">
+                System Prompt
+            </div>
+            <div class="settings" onclick="openSettings()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                Settings
             </div>
         </div>
-        <div id="memory-list"></div>
     </div>
+    <div class="main-content">
+        <div class="model-selector">
+            <button class="toggle-sidebar" onclick="toggleSidebar()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <select id="modelSelect">
+                <option value="gpt-4o">gpt-4o</option>
+                <option value="gpt-4o-mini">gpt-4o-mini</option>
+                <option value="claude-3.5-sonnet">claude-3.5-sonnet</option>
+            </select>
+        </div>
+        <div class="chat-area" id="chatArea">
+            <!-- Chat messages will be inserted here -->
+        </div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type your message here...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
 
-    <script>
-let apiKey = '';
+<div id="settingsModal" class="settings-modal">
+    <div class="settings-content">
+        <span class="close" onclick="closeSettings()">&times;</span>
+        <h2>Settings</h2>
+        <div class="setting-item">
+            <label for="apiBaseUrl">API Base URL:</label>
+            <input type="text" id="apiBaseUrl" placeholder="Enter API Base URL">
+        </div>
+        <div class="setting-item">
+            <label for="apiKey">OpenAI API Key:</label>
+            <input type="text" id="apiKey" placeholder="Enter OpenAI API Key">
+        </div>
+        <div class="setting-item">
+            <label for="memoryToggle">Memory:</label>
+            <label class="switch">
+                <input type="checkbox" id="memoryToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <button onclick="saveSettings()">Save Settings</button>
+    </div>
+</div>
+
+<div id="systemPromptModal" class="settings-modal">
+    <div class="settings-content">
+        <span class="close" onclick="closeSystemPrompt()">&times;</span>
+        <h2>System Prompt</h2>
+        <div class="setting-item">
+            <textarea id="systemPromptInput" rows="5" placeholder="Enter your custom system prompt"></textarea>
+        </div>
+        <button onclick="saveSystemPrompt()">Save System Prompt</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+const chatArea = document.getElementById('chatArea');
+const userInput = document.getElementById('userInput');
+const modelSelect = document.getElementById('modelSelect');
+const settingsModal = document.getElementById('settingsModal');
+const systemPromptModal = document.getElementById('systemPromptModal');
+const apiBaseUrlInput = document.getElementById('apiBaseUrl');
+const apiKeyInput = document.getElementById('apiKey');
+const memoryToggle = document.getElementById('memoryToggle');
+const systemPromptInput = document.getElementById('systemPromptInput');
+const sidebar = document.getElementById('sidebar');
+
 let apiBaseUrl = 'https://api.openai.com/v1';
-let systemPrompt = 'You are a helpful assistant.';
-let selectedModel = 'gpt-4o-mini';
-let savedPrompts = {};
-let savedConversations = {};
-let savedMemories = [];
-let currentConversation = null;
+let apiKey = '';
+let memoryEnabled = false;
+let systemPrompt = '';
 let conversationHistory = [];
-let useMemory = false;
-let maxTokens = 4098;
-let temperature = 0.6;
 
-function handleError(error) {
-    if (error.response) {
-        if (error.response.status === 401) {
-            return "Authentication error. Please check your API key.";
-        } else if (error.response.status === 429) {
-            return "Rate limit exceeded. Please try again later.";
-        } else if (error.response.status >= 500) {
-            return "Server error. Please try again later.";
-        } else {
-            return `Error ${error.response.status}: ${error.response.data.error?.message || 'Unknown error'}`;
-        }
-    } else if (error.request) {
-        return "No response received from the server. Please check your internet connection.";
-    } else {
-        return `Error: ${error.message}`;
-    }
+function toggleSidebar() {
+    sidebar.classList.toggle('hidden');
 }
 
-function toggleSettings() {
-    const settingsPanel = document.getElementById('settings-panel');
-    if (settingsPanel.style.display === 'none' || settingsPanel.style.display === '') {
-        settingsPanel.style.display = 'block';
-    } else {
-        settingsPanel.style.display = 'none';
-    }
+function openSettings() {
+    settingsModal.style.display = "block";
+    apiBaseUrlInput.value = apiBaseUrl;
+    apiKeyInput.value = apiKey;
+    memoryToggle.checked = memoryEnabled;
+}
+
+function closeSettings() {
+    settingsModal.style.display = "none";
 }
 
 function saveSettings() {
-    apiKey = document.getElementById('api-key').value;
-    apiBaseUrl = document.getElementById('api-base-url').value;
-    systemPrompt = document.getElementById('system-prompt').value;
-    selectedModel = document.getElementById('model-selector').value;
-    useMemory = document.getElementById('memory-switch').checked;
-    updateMemoryUI(useMemory);
-
-    const settings = {
-        apiKey,
-        apiBaseUrl,
-        systemPrompt,
-        selectedModel,
-        useMemory,
-        savedPrompts,
-        timestamp: Date.now()
-    };
-
-    localStorage.setItem('latestSettings', JSON.stringify(settings));
-
-    toggleSettings();
+    apiBaseUrl = apiBaseUrlInput.value;
+    apiKey = apiKeyInput.value;
+    memoryEnabled = memoryToggle.checked;
+    if (!memoryEnabled) {
+        conversationHistory = [];
+    }
+    closeSettings();
 }
 
-function updateMemoryUI(isEnabled) {
-    const newMemoryInput = document.getElementById('new-memory');
-    const addMemoryButton = document.querySelector('.memory-actions button');
-    const memoryList = document.getElementById('memory-list');
-
-    newMemoryInput.disabled = !isEnabled;
-    addMemoryButton.disabled = !isEnabled;
-    memoryList.style.opacity = isEnabled ? '1' : '0.5';
-    memoryList.style.pointerEvents = isEnabled ? 'auto' : 'none';
+function openSystemPrompt() {
+    systemPromptModal.style.display = "block";
+    systemPromptInput.value = systemPrompt;
 }
 
-function loadLatestSettings() {
-    const latestSettingsJSON = localStorage.getItem('latestSettings');
-    if (latestSettingsJSON) {
-        const settings = JSON.parse(latestSettingsJSON);
-        
-        document.getElementById('api-key').value = settings.apiKey || '';
-        document.getElementById('api-base-url').value = settings.apiBaseUrl || 'https://api.openai.com/v1';
-        document.getElementById('system-prompt').value = settings.systemPrompt || 'You are a helpful assistant.';
-        document.getElementById('model-selector').value = settings.selectedModel || 'gpt-4o-mini';
-        document.getElementById('memory-switch').checked = settings.useMemory || false;
-
-        apiKey = settings.apiKey;
-        apiBaseUrl = settings.apiBaseUrl;
-        systemPrompt = settings.systemPrompt;
-        selectedModel = settings.selectedModel;
-        useMemory = settings.useMemory;
-        savedPrompts = settings.savedPrompts || {};
-
-        updatePromptSelector();
-    }
-
-    const savedConversationsJSON = localStorage.getItem('savedConversations');
-    if (savedConversationsJSON) {
-        savedConversations = JSON.parse(savedConversationsJSON);
-        updateConvoSelector();
-    }
+function closeSystemPrompt() {
+    systemPromptModal.style.display = "none";
 }
 
-document.getElementById('memory-switch').addEventListener('change', function() {
-    useMemory = this.checked;
-    updateMemoryUI(useMemory);
-});
+function saveSystemPrompt() {
+    systemPrompt = systemPromptInput.value.trim();
+    closeSystemPrompt();
+}
 
-function addMessage(content, isUser, modelName = '') {
-    const messagesContainer = document.getElementById('chat-messages');
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message');
-    messageElement.classList.add(isUser ? 'user-message' : 'ai-message');
-
-    if (isUser) {
-        messageElement.innerHTML += marked.parse(content);
-    } else {
-        messageElement.innerHTML += marked.parse(content);
-        const copyIcon = document.createElement('svg');
-        copyIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="copy-icon" viewBox="0 0 16 16"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2z"/></svg>';
-        copyIcon.classList.add('copy-icon');
-        copyIcon.addEventListener('click', () => copyToClipboard(content));
-        messageElement.appendChild(copyIcon);
-        hljs.highlightAll();
-    }
-    
-    messagesContainer.appendChild(messageElement);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+function newChat() {
+    chatArea.innerHTML = '';
+    userInput.value = '';
+    conversationHistory = [];
 }
 
 async function sendMessage() {
-    const userInput = document.getElementById('user-input');
-    const userMessage = userInput.value.trim();
-    if (userMessage === '') return;
+    const message = userInput.value.trim();
+    if (message === '') return;
 
-    if (userMessage.startsWith('#save ')) {
-        const newMemory = userMessage.slice(6).trim();
-        if (newMemory) {
-            savedMemories.push(newMemory);
-            saveMemoriesToLocalStorage();
-            loadMemories();
-            addMessage(`Memory saved: ${newMemory}`, false, selectedModel);
-        } else {
-            addMessage("Error: No memory content provided after #save", false, selectedModel);
-        }
-        userInput.value = '';
-        return;
-    }
+    const selectedModel = modelSelect.value;
 
-    addMessage(userMessage, true);
+    // Display user message
+    appendMessage(message, 'user-message');
     userInput.value = '';
 
-    conversationHistory.push({ role: 'user', content: userMessage });
+    // Add user message to conversation history
+    if (memoryEnabled) {
+        conversationHistory.push({role: "user", content: message});
+    }
 
     try {
-        let messages;
-        if (useMemory && savedMemories.length > 0) {
-            const systemMessages = systemPrompt.trim() !== '' 
-                ? [{ role: 'system', content: systemPrompt }]
-                : [];
-            
-            messages = [
-                ...systemMessages,
-                ...savedMemories.map(memory => ({ role: 'system', content: memory })),
-                ...conversationHistory
-            ];
-        } else {
-            messages = [
-                { role: 'system', content: systemPrompt || 'You are a helpful assistant.' },
-                ...conversationHistory
-            ];
+        // Prepare messages for API request
+        let messages = memoryEnabled ? conversationHistory : [];
+        if (systemPrompt) {
+            messages.unshift({role: "system", content: systemPrompt});
         }
+        messages.push({role: "user", content: message});
 
+        // Send request to OpenAI API
         const response = await axios.post(`${apiBaseUrl}/chat/completions`, {
             model: selectedModel,
-            messages: messages,
-            max_tokens: maxTokens,
-            temperature: temperature
+            messages: messages
         }, {
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
@@ -565,246 +464,58 @@ async function sendMessage() {
             }
         });
 
+        // Display AI response
         const aiMessage = response.data.choices[0].message.content;
-        addMessage(aiMessage, false, selectedModel);
-        
-        conversationHistory.push({ role: 'assistant', content: aiMessage });
+        appendMessage(aiMessage, 'ai-message');
 
-        autoSaveConversation();
+        // Add AI response to conversation history
+        if (memoryEnabled) {
+            conversationHistory.push({role: "assistant", content: aiMessage});
+        }
     } catch (error) {
         console.error('Error:', error);
-        const errorMessage = handleError(error);
-        addMessage(errorMessage, false, selectedModel);
+        appendMessage('Sorry, I encountered an error. Please check your API settings and try again.', 'ai-message');
     }
 }
 
-function handleKeyDown(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        sendMessage();
-    }
-}
-
-function startNewConversation() {
-    const messagesContainer = document.getElementById('chat-messages');
-    messagesContainer.innerHTML = '';
-    document.getElementById('user-input').value = '';
-    conversationHistory = [];
-    addMessage('New conversation started. How can I assist you?', false);
-    currentConversation = null;
-}
-
-function autoSaveConversation() {
-    if (currentConversation) {
-        const messages = document.getElementById('chat-messages').innerHTML;
-        savedConversations[currentConversation] = messages;
-        localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
-    }
-}
-
-function loadConversation(convoName) {
-    if (savedConversations[convoName]) {
-        document.getElementById('chat-messages').innerHTML = savedConversations[convoName];
-        currentConversation = convoName;
-
-        const messages = document.getElementById('chat-messages').querySelectorAll('.message');
-        conversationHistory = Array.from(messages).map(msg => {
-            const role = msg.classList.contains('user-message') ? 'user' : 'assistant';
-            return { role, content: msg.textContent };
-        });
-    }
-}
-
-function toggleSavePrompt() {
-    const promptContent = document.getElementById('system-prompt').value.trim();
-    if (promptContent) {
-        const promptName = prompt("Enter a name for this prompt:", "");
-        if (promptName) {
-            savePrompt(promptName, promptContent);
-        }
+function appendMessage(message, className) {
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${className}`;
+    if (className === 'ai-message') {
+        messageElement.innerHTML = marked.parse(message);
+        const copyIcon = document.createElement('span');
+        copyIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="copy-icon"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+        copyIcon.onclick = () => copyToClipboard(message);
+        messageElement.appendChild(copyIcon);
     } else {
-        alert('Please enter content for the prompt before saving.');
+        messageElement.textContent = message;
     }
-}
-
-function savePrompt(promptName, promptContent) {
-    if (promptName && promptContent) {
-        savedPrompts[promptName] = promptContent;
-        updatePromptSelector();
-        alert('Prompt saved successfully!');
-    } else {
-        alert('Please enter both a name and content for the prompt.');
-    }
-}
-
-function updatePromptSelector() {
-    const promptSelector = document.getElementById('prompt-selector');
-    const deleteButton = document.getElementById('delete-prompt');
-    promptSelector.innerHTML = '<option value="">Select a prompt</option>';
-    for (const [name, content] of Object.entries(savedPrompts)) {
-        const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
-        promptSelector.appendChild(option);
-    }
-    promptSelector.value = "";
-    deleteButton.style.display = 'none';
-
-    promptSelector.addEventListener('change', loadSelectedPrompt);
-}
-
-function loadSelectedPrompt() {
-    const promptSelector = document.getElementById('prompt-selector');
-    const systemPromptInput = document.getElementById('system-prompt');
-    const deleteButton = document.getElementById('delete-prompt');
-    const selectedPrompt = promptSelector.value;
-
-    if (selectedPrompt && savedPrompts[selectedPrompt]) {
-        systemPromptInput.value = savedPrompts[selectedPrompt];
-        deleteButton.style.display = 'block';
-    } else {
-        systemPromptInput.value = '';
-        deleteButton.style.display = 'none';
-    }
-}
-
-function updateConvoSelector() {
-    const convoSelector = document.getElementById('convo-selector');
-    const deleteButton = document.getElementById('delete-convo');
-    convoSelector.innerHTML = '<option value="">Select a conversation</option>';
-    for (const name of Object.keys(savedConversations)) {
-        const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
-        convoSelector.appendChild(option);
-    }
-    convoSelector.value = "";
-    deleteButton.style.display = 'none';
-
-    convoSelector.addEventListener('change', loadSelectedConversation);
-}
-
-function loadSelectedConversation() {
-    const convoSelector = document.getElementById('convo-selector');
-    const deleteButton = document.getElementById('delete-convo');
-    const selectedConvo = convoSelector.value;
-
-    if (selectedConvo && savedConversations[selectedConvo]) {
-        loadConversation(selectedConvo);
-        deleteButton.style.display = 'block';
-    } else {
-        deleteButton.style.display = 'none';
-    }
-}
-
-function deletePrompt() {
-    const promptSelector = document.getElementById('prompt-selector');
-    const selectedPrompt = promptSelector.value;
-    if (selectedPrompt && savedPrompts[selectedPrompt]) {
-        if (confirm(`Are you sure you want to delete the prompt "${selectedPrompt}"?`)) {
-            delete savedPrompts[selectedPrompt];
-            updatePromptSelector();
-            document.getElementById('system-prompt').value = '';
-            localStorage.setItem('savedPrompts', JSON.stringify(savedPrompts));
-            alert('Prompt deleted successfully!');
-        }
-    }
-}
-
-function saveConversation() {
-    const convoName = prompt("Enter a name for this conversation:", "");
-    if (convoName) {
-        const messages = document.getElementById('chat-messages').innerHTML;
-        savedConversations[convoName] = messages;
-        updateConvoSelector();
-        localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
-        alert('Conversation saved successfully!');
-    }
-}
-
-function deleteConversation() {
-    const convoSelector = document.getElementById('convo-selector');
-    const selectedConvo = convoSelector.value;
-    if (selectedConvo && savedConversations[selectedConvo]) {
-        if (confirm(`Are you sure you want to delete the conversation "${selectedConvo}"?`)) {
-            delete savedConversations[selectedConvo];
-            updateConvoSelector();
-            localStorage.setItem('savedConversations', JSON.stringify(savedConversations));
-            alert('Conversation deleted successfully!');
-        }
-    }
-}
-
-function toggleMemoryManager() {
-    const memoryManager = document.getElementById('memory-manager');
-    if (memoryManager.style.display === 'none' || memoryManager.style.display === '') {
-        memoryManager.style.display = 'block';
-        loadMemories();
-    } else {
-        memoryManager.style.display = 'none';
-    }
-}
-
-function addMemory() {
-    if (!useMemory) {
-        alert("Please enable the memory feature to add new memories.");
-        return;
-    }
-    const newMemoryInput = document.getElementById('new-memory');
-    const memory = newMemoryInput.value.trim();
-    if (memory) {
-        savedMemories.push(memory);
-        saveMemoriesToLocalStorage();
-        newMemoryInput.value = '';
-        loadMemories();
-    }
-}
-
-function deleteMemory(index) {
-    savedMemories.splice(index, 1);
-    saveMemoriesToLocalStorage();
-    loadMemories();
-}
-
-function loadMemories() {
-    const memoryList = document.getElementById('memory-list');
-    memoryList.innerHTML = '';
-    savedMemories.forEach((memory, index) => {
-        const memoryItem = document.createElement('div');
-        memoryItem.classList.add('memory-item');
-        memoryItem.innerHTML = `
-            <span>${memory}</span>
-            <button onclick="deleteMemory(${index})">Delete</button>
-        `;
-        memoryList.appendChild(memoryItem);
-    });
-}
-
-function saveMemoriesToLocalStorage() {
-    localStorage.setItem('savedMemories', JSON.stringify(savedMemories));
-}
-
-function loadMemoriesFromLocalStorage() {
-    const savedMemoriesJSON = localStorage.getItem('savedMemories');
-    if (savedMemoriesJSON) {
-        savedMemories = JSON.parse(savedMemoriesJSON);
-    }
+    chatArea.appendChild(messageElement);
+    chatArea.scrollTop = chatArea.scrollHeight;
 }
 
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
-        alert('Content copied to clipboard!');
+        alert('Copied to clipboard!');
     }).catch(err => {
         console.error('Failed to copy: ', err);
     });
 }
 
-// Load memories from local storage on page load
-window.addEventListener('load', () => {
-    loadLatestSettings();
-    loadMemoriesFromLocalStorage();
-    addMessage('Hello, how can I assist you?', false);
-    updateMemoryUI(useMemory);
+userInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
 });
+
+// Close the modals when clicking outside of them
+window.onclick = function(event) {
+    if (event.target == settingsModal) {
+        closeSettings();
+    }
+    if (event.target == systemPromptModal) {
+        closeSystemPrompt();
+    }
+}
 </script>
 </body></html>

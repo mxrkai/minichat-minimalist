@@ -1,7 +1,6 @@
 <html><head><base href="." />
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ChatGPT Interface</title>
+<title>ChatGPT Reon</title>
 <style>
 :root {
   --primary: #ff9eaa;  /* Light pink primary color */
@@ -26,22 +25,21 @@ body {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 10px; /* Reduced padding for mobile */
-  width: 100%;
+  padding: 20px;
 }
 
 .chat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem; /* Slightly reduced padding */
+  padding: 1rem;
   background: var(--sidebar);
   border-bottom: 1px solid rgba(0,0,0,0.05);
   border-radius: 0;
 }
 
 .chat-header h1 {
-  font-size: 1.2rem; /* Smaller heading on mobile */
+  font-family: 'Segoe Script', cursive;
 }
 
 .header-icons {
@@ -69,7 +67,7 @@ body {
 }
 
 .chat-container {
-  height: calc(100vh - 220px); /* Adjusted height for mobile */
+  height: 70vh;
   background: var(--bg);
   border-radius: 0 0 10px 10px;
   overflow-y: auto;
@@ -79,15 +77,14 @@ body {
 
 .message {
   margin: 0.5rem 0;  
-  padding: 0.8rem; /* Adjusted padding */
+  padding: 1rem;   
   border-radius: 12px;
-  max-width: 95%; /* Wider messages on mobile */
+  max-width: 85%;
   border: none;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   line-height: 1.4;
   position: relative;
   padding-bottom: 2.5rem;  
-  font-size: 0.95rem; /* Slightly smaller text */
 }
 
 .message-icons {
@@ -95,7 +92,7 @@ body {
   bottom: 8px;
   right: 8px;
   display: flex;
-  gap: 12px; /* Adjusted gap */
+  gap: 8px;
 }
 
 .copy-icon, .refresh-icon {
@@ -157,32 +154,30 @@ body {
 }
 
 .input-container {
-  margin-top: 0.8rem; /* Adjusted margin */
+  margin-top: 1rem;
   display: flex;
-  gap: 0.5rem; /* Adjusted gap */
+  gap: 1rem;
 }
 
 textarea {
   flex: 1;
-  padding: 0.8rem;
+  padding: 1rem;
   border-radius: 8px;
   border: 1px solid rgba(0,0,0,0.1);
   background: white;
   color: var(--text);
   resize: none;
   height: 60px;
-  font-size: 0.95rem; /* Adjusted font size */
 }
 
 button {
-  padding: 0 1rem; /* Adjusted padding */
+  padding: 0 1.5rem;
   background: var(--primary);
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: opacity 0.3s ease;
-  min-height: 60px; /* Match textarea height */
 }
 
 button:hover {
@@ -205,21 +200,20 @@ button:hover {
   background: white;
   border: 1px solid rgba(0,0,0,0.05);
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  padding: 1.5rem; /* Adjusted padding */
+  padding: 2rem;
   border-radius: 10px;
-  width: 95%;
-  margin: 10px; /* Adjusted margin */
+  width: 90%;
+  max-width: 500px;
 }
 
 .api-key-input, .model-selector {
   width: 100%;
-  padding: 0.6rem; /* Adjusted padding */
+  padding: 0.5rem;
   margin: 1rem 0;
   background: var(--bg);
   border: 1px solid rgba(0,0,0,0.1);
   color: var(--text);
   border-radius: 4px;
-  font-size: 0.9rem; /* Adjusted font size */
 }
 
 .setting-group {
@@ -230,36 +224,11 @@ button:hover {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: bold;
-  font-size: 0.9rem; /* Adjusted font size */
-}
-
-.file-upload {
-  width: 100%;
-  padding: 0.8rem; /* Adjusted padding */
-  margin: 1rem 0;
-  background: var(--bg);
-  border: 2px dashed rgba(0,0,0,0.1);
-  border-radius: 8px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 0.3s ease;
-  font-size: 0.9rem; /* Adjusted font size */
-}
-
-.file-upload:hover {
-  border-color: var(--primary);
-}
-
-.uploaded-file {
-  margin-top: 1rem;
-  padding: 0.5rem;
-  background: rgba(255, 158, 170, 0.1);
-  font-size: 0.9rem; /* Adjusted font size */
 }
 
 .system-prompt-input {
   width: 100%;
-  padding: 0.6rem; /* Adjusted padding */
+  padding: 0.8rem;
   margin: 0.5rem 0;
   background: var(--bg);
   border: 1px solid rgba(0,0,0,0.1);
@@ -268,13 +237,12 @@ button:hover {
   resize: vertical;
   min-height: 100px;
   font-family: inherit;
-  font-size: 0.9rem; /* Adjusted font size */
 }
 
 #save-settings {
-  width: 100%;
+  width: auto;
   min-width: 120px;
-  margin-top: 1.5rem; /* Adjusted margin */
+  margin: 1rem auto 0;
   display: block;
   padding: 0.8rem 2rem;
 }
@@ -283,62 +251,13 @@ button:hover {
   from {transform: rotate(0deg);}
   to {transform: rotate(360deg);}
 }
-
-/* Media queries for mobile devices */
-@media screen and (max-width: 768px) {
-  .chat-header h1 {
-    font-size: 1.1rem;
-  }
-
-  .message {
-    max-width: 100%;
-  }
-  
-  .message-icons {
-    gap: 12px;
-  }
-
-  .input-container {
-    flex-direction: column;
-  }
-
-  button {
-    width: 100%;
-    min-height: 45px;
-  }
-  
-  .setting-group label {
-    font-size: 0.9rem;
-  }
-  
-  .api-key-input, 
-  .model-selector,
-  .system-prompt-input {
-    font-size: 0.9rem;
-    padding: 0.6rem;
-  }
-
-  #save-settings {
-    width: 100%;
-    margin-top: 1.5rem;
-  }
-
-  .file-upload {
-    padding: 0.8rem;
-    font-size: 0.9rem;
-  }
-
-  .uploaded-file {
-    font-size: 0.9rem;
-  }
-}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
 <div class="container">
   <div class="chat-header">
-    <h1>ChatGPT Interface</h1>
+    <h1>ChatGPT Reon</h1>
     <div class="header-icons">
       <svg class="new-chat-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -359,12 +278,6 @@ button:hover {
     <textarea id="user-input" placeholder="Type your message here..."></textarea>
     <button id="send-button">Send</button>
   </div>
-  
-  <div class="file-upload" id="file-upload">
-    <p>Drop PDF file here or click to upload</p>
-    <input type="file" id="pdf-input" accept=".pdf" style="display: none;">
-  </div>
-  <div class="uploaded-file" id="uploaded-file"></div>
 </div>
 
 <div class="modal" id="settings-modal">
@@ -406,7 +319,6 @@ button:hover {
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
 <script>
 const chatContainer = document.getElementById('chat-container');
 const userInput = document.getElementById('user-input');
@@ -417,9 +329,6 @@ const closeModal = document.querySelector('.close-modal');
 const apiKeyInput = document.getElementById('api-key-input');
 const apiBaseInput = document.getElementById('api-base-input');
 const saveSettings = document.getElementById('save-settings');
-const fileUpload = document.getElementById('file-upload');
-const pdfInput = document.getElementById('pdf-input');
-const uploadedFile = document.getElementById('uploaded-file');
 const newChatIcon = document.querySelector('.new-chat-icon');
 
 const MESSAGE_WINDOW_SIZE = 10; // Number of previous messages to keep
@@ -428,7 +337,6 @@ let apiKey = localStorage.getItem('openai-api-key') || '';
 let apiBase = localStorage.getItem('api-base-url') || 'https://api.openai.com';
 let selectedModel = localStorage.getItem('selected-model') || 'gpt-4';
 let systemPrompt = localStorage.getItem('system-prompt') || '';
-let pdfText = '';
 
 if (apiKey) {
   apiKeyInput.value = apiKey;
@@ -446,78 +354,7 @@ if (systemPrompt) {
   document.getElementById('system-prompt-input').value = systemPrompt;
 }
 
-fileUpload.addEventListener('click', () => {
-  pdfInput.click();
-});
-
-fileUpload.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  fileUpload.style.borderColor = '#ff9eaa';  
-});
-
-fileUpload.addEventListener('dragleave', (e) => {
-  e.preventDefault();
-  fileUpload.style.borderColor = 'rgba(0,0,0,0.1)';
-});
-
-fileUpload.addEventListener('drop', (e) => {
-  e.preventDefault();
-  const file = e.dataTransfer.files[0];
-  if (file && file.type === 'application/pdf') {
-    handlePDFUpload(file);
-  }
-});
-
-pdfInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    handlePDFUpload(file);
-  }
-});
-
-async function handlePDFUpload(file) {
-  uploadedFile.style.display = 'block';
-  uploadedFile.textContent = `Processing: ${file.name}`;
-  
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-    const typedarray = new Uint8Array(e.target.result);
-    
-    const pdf = await pdfjsLib.getDocument(typedarray).promise;
-    let text = '';
-    
-    for(let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items
-        .map(item => item.str)
-        .join(' ')
-        .replace(/\s+/g, ' '); // Normalize whitespace
-      text += pageText + '\n\n'; // Add paragraph breaks between pages
-    }
-    
-    pdfText = text.trim();
-    uploadedFile.textContent = `Loaded: ${file.name}`;
-    addMessage('PDF loaded successfully. You can now ask questions about its contents. The document has been processed and is ready for querying.');
-  };
-  
-  reader.readAsArrayBuffer(file);
-}
-
-async function getPDFContext(query) {
-  if (!pdfText) return '';
-  
-  const chunks = pdfText.match(/.{1,1000}/g) || [];
-  
-  const keywords = query.toLowerCase().split(' ');
-  const relevantChunks = chunks.filter(chunk => 
-    keywords.some(word => chunk.toLowerCase().includes(word))
-  );
-
-  return relevantChunks.slice(0, 2).join(' ');
-}
-
-function addMessage(content, isUser = false) {
+async function addMessage(content, isUser = false) {
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
   
@@ -598,16 +435,6 @@ async function regenerateResponse(messageDiv) {
       role: 'system',
       content: systemPrompt
     });
-  }
-  
-  if (pdfText) {
-    const context = await getPDFContext(userMessage);
-    if (context) {
-      messages.push({
-        role: 'system',
-        content: `Relevant PDF context: ${context}`
-      });
-    }
   }
 
   const recentMessages = messageHistory.slice(-MESSAGE_WINDOW_SIZE);
@@ -726,14 +553,6 @@ async function sendMessage() {
     messages.push({
       role: 'system',
       content: systemPrompt
-    });
-  }
-  
-  if (pdfText) {
-    const pdfChunks = pdfText.match(/.{1,1000}/g) || [];
-    messages.push({
-      role: 'system', 
-      content: `PDF Context (Part 1/${pdfChunks.length}): ${pdfChunks[0]}`
     });
   }
 
@@ -907,9 +726,6 @@ saveSettings.addEventListener('click', () => {
 // Add new function to clear chat
 function startNewChat() {
   chatContainer.innerHTML = '';
-  pdfText = '';
-  uploadedFile.style.display = 'none';
-  uploadedFile.textContent = '';
   messageHistory = [];
   addMessage('Hello! How can I assist you today?');
 }

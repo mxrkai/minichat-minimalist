@@ -1,5 +1,6 @@
 <html><head><base href="." />
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ChatGPT Reon</title>
 <style>
 :root {
@@ -26,20 +27,19 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  width: 100%;
 }
 
 .chat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  background: var(--sidebar);
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-  border-radius: 0;
+  padding: 0.8rem;
 }
 
 .chat-header h1 {
   font-family: 'Segoe Script', cursive;
+  font-size: 1.5rem;
 }
 
 .header-icons {
@@ -77,14 +77,15 @@ body {
 
 .message {
   margin: 0.5rem 0;  
-  padding: 1rem;   
+  padding: 0.8rem;   
   border-radius: 12px;
-  max-width: 85%;
+  max-width: 95%;
   border: none;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   line-height: 1.4;
   position: relative;
   padding-bottom: 2.5rem;  
+  word-break: break-word;
 }
 
 .message-icons {
@@ -154,24 +155,26 @@ body {
 }
 
 .input-container {
-  margin-top: 1rem;
+  margin-top: 0.8rem;
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 textarea {
-  flex: 1;
+  width: 100%;
+  min-height: 50px;
   padding: 1rem;
   border-radius: 8px;
   border: 1px solid rgba(0,0,0,0.1);
   background: white;
   color: var(--text);
   resize: none;
-  height: 60px;
 }
 
 button {
-  padding: 0 1.5rem;
+  width: 100%;
+  padding: 0.8rem;
   background: var(--primary);
   color: white;
   border: none;
@@ -200,10 +203,11 @@ button:hover {
   background: white;
   border: 1px solid rgba(0,0,0,0.05);
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  padding: 2rem;
+  padding: 1rem;
   border-radius: 10px;
-  width: 90%;
+  width: 95%;
   max-width: 500px;
+  margin: 1rem;
 }
 
 .api-key-input, .model-selector {
@@ -250,6 +254,30 @@ button:hover {
 @keyframes spin {
   from {transform: rotate(0deg);}
   to {transform: rotate(360deg);}
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .chat-container {
+    height: calc(100vh - 180px);
+  }
+  
+  .message {
+    font-size: 0.9rem;
+  }
+  
+  .input-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
+    background: var(--bg);
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
